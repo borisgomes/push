@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pushup Tracker">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+Cjx0ZXh0IHg9IjkwIiB5PSIxMTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4MCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5KqPC90ZXh0Pgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAiIHkxPSIwIiB4Mj0iMTgwIiB5Mj0iMTgwIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4=">
+    <title>10,000 Pushup Challenge Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .progress-ring {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .progress-ring-circle-bg {
+            stroke: rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-ring-circle-fill {
+            stroke: #4ade80;
+            stroke-dasharray: 565.48;
+            stroke-dashoffset: 565.48;
+            transition: stroke-dashoffset 0.5s ease;
+            stroke-linecap: round;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-number {
+            font-size: 3em;
+            font-weight: bold;
+        }
+
+        .progress-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .input-section {
+            text-align: center;
+        }
+
+        .voice-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px 0 rgba(31, 38, 135, 0.2);
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .voice-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(240, 147, 251, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 20px rgba(240, 147, 251, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(240, 147, 251, 0);
+            }
+        }
+
+        .manual-input {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .manual-input input {
+            padding: 12px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            width: 150px;
+            text-align: center;
+        }
+
+        .manual-input input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .manual-input button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .manual-input button:hover {
+            transform: scale(1.05);
+        }
+
+        .history {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .voice-status {
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0.8;
+            min-height: 20px;
+        }
+
+        .reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(239, 68, 68, 0.8);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: rgba(239, 68, 68, 1);
+        }
+
+        .storage-note {
+            text-align: center;
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 10,000 Pushup Challenge</h1>
+        </div>
+
+        <div class="card">
+            <div class="progress-ring">
+                <svg width="200" height="200">
+                    <circle class="progress-ring-circle progress-ring-circle-bg" cx="100" cy="100" r="90"></circle>
+                    <circle class="progress-ring-circle progress-ring-circle-fill" cx="100" cy="100" r="90"></circle>
+                </svg>
+                <div class="progress-text">
+                    <div class="progress-number" id="totalProgress">0</div>
+                    <div class="progress-label">/ 10,000</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="todayCount">0</div>
+                    <div class="stat-label">Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="todayRemaining">300</div>
+                    <div class="stat-label">Left Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="daysActive">1</div>
+                    <div class="stat-label">Days Active</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="avgPerDay">0</div>
+                    <div class="stat-label">Avg/Day</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-section">
+                <button class="voice-btn" id="voiceBtn">
+                    🎤
+                </button>
+                <div class="voice-status" id="voiceStatus"></div>
+                
+                <div class="manual-input">
+                    <input type="number" id="manualInput" placeholder="Count" min="1">
+                    <button onclick="addManualPushups()">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">Today's Sessions</h3>
+            <div class="history" id="todayHistory"></div>
+            <button class="reset-btn" onclick="resetAll()">Reset All Data</button>
+            <p class="storage-note">Data is saved locally on your device</p>
+        </div>
+    </div>
+
+    <script>
+        // Data structure with localStorage support
+        let data = {
+            total: 0,
+            todayCount: 0,
+            todayHistory: [],
+            startDate: new Date().toDateString(),
+            lastActiveDate: new Date().toDateString()
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('pushupData');
+                if (saved) {
+                    data = JSON.parse(saved);
+                    // Check if it's a new day
+                    if (data.lastActiveDate !== new Date().toDateString()) {
+                        data.todayCount = 0;
+                        data.todayHistory = [];
+                        data.lastActiveDate = new Date().toDateString();
+                        saveData();
+                    }
+                }
+            } catch (e) {
+                console.log('localStorage not available, using session storage only');
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            try {
+                localStorage.setItem('pushupData', JSON.stringify(data));
+            } catch (e) {
+                console.log('Unable to save to localStorage');
+            }
+        }
+
+        // Get today's date string
+        function getTodayString() {
+            return new Date().toDateString();
+        }
+
+        // Calculate days active
+        function getDaysActive() {
+            const start = new Date(data.startDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return Math.max(1, diffDays);
+        }
+
+        // Add pushups
+        function addPushups(count) {
+            // Update total
+            data.total += count;
+            data.todayCount += count;
+            
+            // Add to today's history
+            data.todayHistory.push({
+                count: count,
+                time: new Date().toLocaleTimeString()
+            });
+            
+            // Keep only recent history
+            if (data.todayHistory.length > 20) {
+                data.todayHistory.shift();
+            }
+            
+            updateUI();
+            saveData();
+            
+            // Celebrate milestones
+            if (data.total >= 10000 && data.total - count < 10000) {
+                alert('🎉 Congratulations! You\'ve completed the 10,000 pushup challenge! 🎉');
+            }
+        }
+
+        // Update UI
+        function updateUI() {
+            const todayRemaining = Math.max(0, 300 - data.todayCount);
+            const daysActive = getDaysActive();
+            const avgPerDay = daysActive > 0 ? Math.round(data.total / daysActive) : 0;
+            
+            // Update stats
+            document.getElementById('totalProgress').textContent = data.total.toLocaleString();
+            document.getElementById('todayCount').textContent = data.todayCount;
+            document.getElementById('todayRemaining').textContent = todayRemaining;
+            document.getElementById('daysActive').textContent = daysActive;
+            document.getElementById('avgPerDay').textContent = avgPerDay;
+            
+            // Update progress ring
+            const progressPercent = Math.min(100, (data.total / 10000) * 100);
+            const circumference = 2 * Math.PI * 90;
+            const offset = circumference - (progressPercent / 100) * circumference;
+            document.querySelector('.progress-ring-circle-fill').style.strokeDashoffset = offset;
+            
+            // Update history
+            const historyHtml = data.todayHistory.slice().reverse().map(item => 
+                `<div class="history-item">
+                    <span>${item.time}</span>
+                    <span>+${item.count} pushups</span>
+                </div>`
+            ).join('');
+            document.getElementById('todayHistory').innerHTML = historyHtml || '<div style="text-align: center; opacity: 0.5;">No pushups recorded today</div>';
+        }
+
+        // Voice recognition
+        let recognition;
+        let isListening = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('voiceBtn').classList.add('listening');
+                document.getElementById('voiceStatus').textContent = 'Listening... Say a number';
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const number = parseInt(transcript);
+                
+                if (!isNaN(number) && number > 0 && number < 1000) {
+                    addPushups(number);
+                    document.getElementById('voiceStatus').textContent = `Added ${number} pushups!`;
+                } else {
+                    document.getElementById('voiceStatus').textContent = `Couldn't understand "${transcript}". Please say a number.`;
+                }
+            };
+
+            recognition.onerror = function(event) {
+                document.getElementById('voiceStatus').textContent = 'Error: ' + event.error;
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+                setTimeout(() => {
+                    if (!isListening) {
+                        document.getElementById('voiceStatus').textContent = '';
+                    }
+                }, 3000);
+            };
+        }
+
+        // Voice button click
+        document.getElementById('voiceBtn').addEventListener('click', function() {
+            if (!recognition) {
+                alert('Voice recognition is not supported in your browser. Please use manual input.');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.error('Recognition error:', e);
+                    document.getElementById('voiceStatus').textContent = 'Voice recognition failed. Please use manual input.';
+                }
+            }
+        });
+
+        // Manual input
+        function addManualPushups() {
+            const input = document.getElementById('manualInput');
+            const count = parseInt(input.value);
+            
+            if (!isNaN(count) && count > 0 && count < 1000) {
+                addPushups(count);
+                input.value = '';
+            }
+        }
+
+        // Enter key for manual input
+        document.getElementById('manualInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addManualPushups();
+            }
+        });
+
+        // Reset all data
+        function resetAll() {
+            if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+                data = {
+                    total: 0,
+                    todayCount: 0,
+                    todayHistory: [],
+                    startDate: new Date().toDateString()
+                };
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Initialize
+        loadData();
+        updateUI();
+    </script>
+</body>
+</html>
