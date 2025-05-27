@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Pushup Tracker</title>
     <style>
         * {
@@ -504,6 +505,49 @@
             opacity: 1;
         }
 
+        /* Download Report Button */
+        .download-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 0 20px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .download-btn:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .download-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: white;
+            stroke-width: 2;
+            fill: none;
+        }
+
         /* Hidden file input */
         #photoInput {
             display: none;
@@ -573,6 +617,18 @@
                 <div class="empty-state">Start your workout to see activity</div>
             </div>
             <div class="photos-grid" id="photosGrid"></div>
+        </div>
+
+        <!-- Download Report Section -->
+        <div class="download-section" id="downloadSection" style="display: none;">
+            <button class="download-btn" onclick="generateReport()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Challenge Report
+            </button>
         </div>
     </div>
 
@@ -870,6 +926,11 @@
             
             // Update photos
             updatePhotosGrid();
+            
+            // Show download button if challenge is complete or significant progress
+            if (data.total >= 10000 || data.total >= 5000) {
+                document.getElementById('downloadSection').style.display = 'block';
+            }
         }
 
         // Update weekly chart
@@ -1008,6 +1069,117 @@
                 addManualPushups();
             }
         });
+
+        // Generate PDF Report
+        function generateReport() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Title
+            doc.setFontSize(24);
+            doc.setTextColor(102, 126, 234);
+            doc.text('10,000 Pushup Challenge Report', 105, 20, { align: 'center' });
+            
+            // Date
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+            
+            // Summary Stats
+            doc.setFontSize(16);
+            doc.setTextColor(40);
+            doc.text('Challenge Summary', 20, 50);
+            
+            doc.setFontSize(12);
+            doc.setTextColor(60);
+            const stats = [
+                `Total Pushups: ${data.total.toLocaleString()}`,
+                `Days Active: ${getDaysActive()}`,
+                `Average Per Day: ${Math.round(data.total / getDaysActive())}`,
+                `Best Streak: ${calculateStreak()} days`,
+                `Challenge Status: ${data.total >= 10000 ? 'COMPLETED! 🎉' : `${((data.total/10000)*100).toFixed(1)}% Complete`}`
+            ];
+            
+            stats.forEach((stat, index) => {
+                doc.text(stat, 20, 65 + (index * 8));
+            });
+            
+            // Pushup Types Breakdown
+            doc.setFontSize(16);
+            doc.setTextColor(40);
+            doc.text('Pushup Types Breakdown', 20, 110);
+            
+            doc.setFontSize(12);
+            doc.setTextColor(60);
+            const types = Object.entries(data.pushupTypes);
+            types.forEach(([type, count], index) => {
+                const percentage = data.total > 0 ? ((count/data.total)*100).toFixed(1) : 0;
+                doc.text(`${type.charAt(0).toUpperCase() + type.slice(1)}: ${count} (${percentage}%)`, 20, 125 + (index * 8));
+            });
+            
+            // Daily Progress Chart
+            doc.setFontSize(16);
+            doc.setTextColor(40);
+            doc.text('Daily Progress', 20, 165);
+            
+            // Create simple bar chart
+            const dailyEntries = Object.entries(data.dailyData).slice(-30); // Last 30 days
+            if (dailyEntries.length > 0) {
+                const maxDaily = Math.max(...dailyEntries.map(([_, count]) => count));
+                const chartWidth = 170;
+                const chartHeight = 50;
+                const barWidth = chartWidth / dailyEntries.length;
+                
+                doc.setDrawColor(200);
+                doc.rect(20, 175, chartWidth, chartHeight);
+                
+                dailyEntries.forEach(([date, count], index) => {
+                    const barHeight = (count / maxDaily) * chartHeight;
+                    const x = 20 + (index * barWidth);
+                    const y = 175 + chartHeight - barHeight;
+                    
+                    // Gradient effect
+                    doc.setFillColor(102 + index * 2, 126 - index, 234);
+                    doc.rect(x + 1, y, barWidth - 2, barHeight, 'F');
+                });
+                
+                // Chart labels
+                doc.setFontSize(8);
+                doc.setTextColor(100);
+                doc.text('First Day', 20, 235);
+                doc.text('Last Day', 190, 235, { align: 'right' });
+            }
+            
+            // Milestones
+            doc.setFontSize(16);
+            doc.setTextColor(40);
+            doc.text('Key Milestones', 20, 255);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(60);
+            const milestones = [
+                { count: 100, label: 'First 100' },
+                { count: 1000, label: 'First 1,000' },
+                { count: 5000, label: 'Halfway There!' },
+                { count: 10000, label: 'Challenge Complete!' }
+            ];
+            
+            let milestoneY = 265;
+            milestones.forEach(milestone => {
+                if (data.total >= milestone.count) {
+                    doc.text(`✓ ${milestone.label} - Achieved!`, 25, milestoneY);
+                    milestoneY += 6;
+                }
+            });
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text('Generated by Pushup Tracker App', 105, 290, { align: 'center' });
+            
+            // Save the PDF
+            doc.save(`pushup-challenge-report-${new Date().toISOString().split('T')[0]}.pdf`);
+        }
 
         // Initialize
         loadData();
