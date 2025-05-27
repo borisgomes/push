@@ -6,6 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Pushups">
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHBhdGggZD0iTTYwIDExMEw2MCA3MEg4MEM4OCA3MCA5NSA3NyA5NSA4NVY5NUM5NSAxMDMgOTUgMTAzIDk1IDk1VjEwNUM5NSAxMTMgODggMTIwIDgwIDEyMEg2MFYxMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIwIDcwSDEwMFYxMTBIMTAwVjEyMEgxMjBDMTI4IDEyMCAxMzUgMTEzIDEzNSAxMDVWODVDMTM1IDc3IDEyOCA3MCAxMjAgNzBaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyIiB4MT0iMCIgeTE9IjAiIHgyPSIxODAiIHkyPSIxODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4=">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
     <title>Pushup Tracker</title>
     <style>
         * {
@@ -74,12 +78,33 @@
             opacity: 0.9;
         }
 
+        /* Motivational Quote */
+        .quote-section {
+            text-align: center;
+            padding: 0 20px 20px 20px;
+            margin-bottom: 10px;
+        }
+
+        .quote-text {
+            font-family: 'Courier Prime', monospace;
+            font-size: 16px;
+            color: #2D3142;
+            line-height: 1.5;
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
         /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 25px;
+        }
+
+        .stats-grid.three-col {
+            grid-template-columns: 1fr 1fr 1fr;
         }
 
         .stat-card {
@@ -112,6 +137,125 @@
             color: white;
         }
 
+        .stat-card.streak {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-card.streak .stat-value,
+        .stat-card.streak .stat-label {
+            color: white;
+        }
+
+        .streak-emoji {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 24px;
+        }
+
+        /* Prediction Section */
+        .prediction-section {
+            background: #F3F4F6;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .prediction-text {
+            font-size: 15px;
+            color: #6B7280;
+            margin: 0;
+        }
+
+        .prediction-date {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Weekly Chart */
+        .chart-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            height: 150px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 8px 8px 0 0;
+            min-height: 4px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+
+        .chart-bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #9CA3AF;
+            white-space: nowrap;
+        }
+
+        .chart-bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            white-space: nowrap;
+        }
+
+        /* Pushup Type Selector */
+        .type-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding: 2px;
+        }
+
+        .type-btn {
+            padding: 8px 16px;
+            background: #F3F4F6;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #6B7280;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .type-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .type-btn:hover:not(.active) {
+            border-color: #667eea;
+        }
+
         /* Voice Input Section */
         .voice-section {
             position: fixed;
@@ -130,7 +274,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
+        }
+
+        .quick-add-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .quick-add-btn {
+            padding: 10px 16px;
+            background: #F3F4F6;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6B7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-add-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
         }
 
         .voice-btn {
@@ -355,16 +522,39 @@
             <div class="progress-text" id="progressText">0% complete</div>
         </div>
 
+        <!-- Motivational Quote -->
+        <div class="quote-section">
+            <p class="quote-text" id="dailyQuote">Every pushup is a step closer to your strongest self.</p>
+        </div>
+
         <!-- Stats Grid -->
-        <div class="stats-grid">
+        <div class="stats-grid three-col">
             <div class="stat-card today">
                 <div class="stat-value" id="todayCount">0</div>
                 <div class="stat-label">Today</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="daysActive">0</div>
-                <div class="stat-label">Days Active</div>
+                <div class="stat-value" id="avgPerDay">0</div>
+                <div class="stat-label">Daily Avg</div>
             </div>
+            <div class="stat-card streak">
+                <div class="stat-value">
+                    <span id="streakCount">0</span>
+                    <span class="streak-emoji">🔥</span>
+                </div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+        </div>
+
+        <!-- Progress Prediction -->
+        <div class="prediction-section">
+            <p class="prediction-text" id="predictionText">Start tracking to see your predicted completion date</p>
+        </div>
+
+        <!-- Weekly Chart -->
+        <div class="chart-section">
+            <h3 class="section-title">This Week</h3>
+            <div class="chart-container" id="weeklyChart"></div>
         </div>
 
         <!-- Today's Activity -->
@@ -388,20 +578,32 @@
 
     <!-- Voice Input Section -->
     <div class="voice-section">
-        <div class="voice-container">
-            <div style="position: relative;">
-                <div class="voice-status" id="voiceStatus"></div>
-                <button class="voice-btn" id="voiceBtn">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z"/>
-                        <path d="M19 10v2a7 7 0 01-14 0v-2"/>
-                        <path d="M12 19v4"/>
-                    </svg>
-                </button>
+        <div class="voice-container" style="flex-direction: column; gap: 15px;">
+            <div class="type-selector">
+                <button class="type-btn active" onclick="selectType('normal')">Normal</button>
+                <button class="type-btn" onclick="selectType('pike')">Pike</button>
+                <button class="type-btn" onclick="selectType('wide')">Wide</button>
+                <button class="type-btn" onclick="selectType('elevated')">Elevated</button>
             </div>
-            <div class="manual-input">
-                <input type="number" id="manualInput" placeholder="0" min="1">
-                <button class="add-btn" onclick="addManualPushups()">Add</button>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="quick-add-buttons">
+                    <button class="quick-add-btn" onclick="addPushups(5)">5</button>
+                    <button class="quick-add-btn" onclick="addPushups(10)">10</button>
+                </div>
+                <div style="position: relative;">
+                    <div class="voice-status" id="voiceStatus"></div>
+                    <button class="voice-btn" id="voiceBtn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z"/>
+                            <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                            <path d="M12 19v4"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="quick-add-buttons">
+                    <button class="quick-add-btn" onclick="addPushups(15)">15</button>
+                    <button class="quick-add-btn" onclick="addPushups(20)">20</button>
+                </div>
             </div>
         </div>
     </div>
@@ -410,6 +612,49 @@
     <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
 
     <script>
+        // Motivational quotes
+        const quotes = [
+            "Every pushup is a step closer to your strongest self.",
+            "Your body can stand almost anything – it's your mind you have to convince.",
+            "The pain you feel today will be the strength you feel tomorrow.",
+            "Champions are made from something deep inside them – a desire, a dream, a vision.",
+            "Success starts with self-discipline.",
+            "You don't have to be great to start, but you have to start to be great.",
+            "The only bad workout is the one that didn't happen.",
+            "Strength doesn't come from what you can do, it comes from overcoming what you once couldn't.",
+            "Push yourself because no one else is going to do it for you.",
+            "Great things never come from comfort zones.",
+            "Your limitation is only your imagination.",
+            "It's going to be hard, but hard does not mean impossible.",
+            "Dream it, wish it, do it.",
+            "Success doesn't just find you – you have to go out and get it.",
+            "The harder you work for something, the greater you'll feel when you achieve it.",
+            "Don't stop when you're tired, stop when you're done.",
+            "Wake up with determination, go to bed with satisfaction.",
+            "Do something today that your future self will thank you for.",
+            "Little things make big days.",
+            "It's never too late to become what you might have been.",
+            "The body achieves what the mind believes.",
+            "You are stronger than you think.",
+            "Every champion was once a contender who refused to give up.",
+            "Your only limit is you.",
+            "Make yourself proud.",
+            "Work hard in silence, let success make the noise.",
+            "The pain of discipline weighs ounces, the pain of regret weighs tons.",
+            "Results happen over time, not overnight.",
+            "Believe in yourself and all that you are.",
+            "The difference between try and triumph is a little 'umph'.",
+            "Strive for progress, not perfection."
+        ];
+
+        // Get daily quote based on date
+        function getDailyQuote() {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+            const quoteIndex = dayOfYear % quotes.length;
+            return quotes[quoteIndex];
+        }
+
         // Data structure
         let data = {
             total: 0,
@@ -418,8 +663,19 @@
             photos: [],
             startDate: new Date().toDateString(),
             lastActiveDate: new Date().toDateString(),
-            dailyData: {}
+            dailyData: {},
+            weeklyData: {},
+            streak: 0,
+            lastStreakDate: null,
+            pushupTypes: {
+                normal: 0,
+                pike: 0,
+                wide: 0,
+                elevated: 0
+            }
         };
+
+        let selectedType = 'normal';
 
         // Load data from localStorage
         function loadData() {
@@ -450,9 +706,85 @@
             }
         }
 
-        // Calculate days active
-        function getDaysActive() {
-            return Object.keys(data.dailyData).length || 1;
+        // Calculate streak
+        function calculateStreak() {
+            const today = new Date();
+            const sortedDates = Object.keys(data.dailyData).sort((a, b) => new Date(b) - new Date(a));
+            
+            if (sortedDates.length === 0) return 0;
+            
+            let streak = 0;
+            let checkDate = new Date(today);
+            
+            for (let i = 0; i < sortedDates.length; i++) {
+                const dateStr = checkDate.toDateString();
+                if (data.dailyData[dateStr] && data.dailyData[dateStr] > 0) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else if (i === 0 && today.toDateString() !== sortedDates[0]) {
+                    // If today has no pushups yet, check from yesterday
+                    checkDate = new Date(sortedDates[0]);
+                    if (data.dailyData[checkDate.toDateString()] > 0) {
+                        streak++;
+                        checkDate.setDate(checkDate.getDate() - 1);
+                    }
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        // Calculate progress prediction
+        function calculatePrediction() {
+            const daysActive = getDaysActive();
+            if (daysActive === 0 || data.total === 0) return null;
+            
+            const avgPerDay = data.total / daysActive;
+            const remaining = 10000 - data.total;
+            const daysToComplete = Math.ceil(remaining / avgPerDay);
+            
+            const predictedDate = new Date();
+            predictedDate.setDate(predictedDate.getDate() + daysToComplete);
+            
+            return {
+                date: predictedDate,
+                daysRemaining: daysToComplete
+            };
+        }
+
+        // Get weekly data
+        function getWeeklyData() {
+            const weekData = [];
+            const today = new Date();
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toDateString();
+                const dayName = daysOfWeek[date.getDay()];
+                const count = data.dailyData[dateStr] || 0;
+                
+                weekData.push({
+                    day: dayName,
+                    date: dateStr,
+                    count: count,
+                    isToday: i === 0
+                });
+            }
+            
+            return weekData;
+        }
+
+        // Select pushup type
+        function selectType(type) {
+            selectedType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
         }
 
         // Add pushups
@@ -468,9 +800,13 @@
             }
             data.dailyData[today] += count;
             
-            // Add to history
+            // Update pushup types
+            data.pushupTypes[selectedType] += count;
+            
+            // Add to history with type
             data.todayHistory.push({
                 count: count,
+                type: selectedType,
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             });
             
@@ -491,9 +827,33 @@
             document.getElementById('progressFill').style.width = progressPercent + '%';
             document.getElementById('progressText').textContent = progressPercent.toFixed(1) + '% complete';
             
+            // Update daily quote
+            document.getElementById('dailyQuote').textContent = getDailyQuote();
+            
             // Update stats
             document.getElementById('todayCount').textContent = data.todayCount;
-            document.getElementById('daysActive').textContent = getDaysActive();
+            const daysActive = getDaysActive();
+            const avgPerDay = daysActive > 0 ? Math.round(data.total / daysActive) : 0;
+            document.getElementById('avgPerDay').textContent = avgPerDay;
+            
+            // Update streak
+            const streak = calculateStreak();
+            document.getElementById('streakCount').textContent = streak;
+            
+            // Update prediction
+            const prediction = calculatePrediction();
+            const predictionEl = document.getElementById('predictionText');
+            if (prediction && data.total < 10000) {
+                const dateStr = prediction.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                predictionEl.innerHTML = `At this pace, you'll reach 10,000 on <span class="prediction-date">${dateStr}</span> (${prediction.daysRemaining} days)`;
+            } else if (data.total >= 10000) {
+                predictionEl.innerHTML = '<span class="prediction-date">Congratulations! You\'ve completed the challenge!</span>';
+            } else {
+                predictionEl.textContent = 'Start tracking to see your predicted completion date';
+            }
+            
+            // Update weekly chart
+            updateWeeklyChart();
             
             // Update activity list
             const activityList = document.getElementById('activityList');
@@ -501,7 +861,7 @@
                 activityList.innerHTML = data.todayHistory.slice().reverse().map(item => `
                     <div class="activity-item">
                         <span class="activity-time">${item.time}</span>
-                        <span class="activity-count">+${item.count} pushups</span>
+                        <span class="activity-count">+${item.count} ${item.type || 'normal'}</span>
                     </div>
                 `).join('');
             } else {
@@ -510,6 +870,25 @@
             
             // Update photos
             updatePhotosGrid();
+        }
+
+        // Update weekly chart
+        function updateWeeklyChart() {
+            const weekData = getWeeklyData();
+            const maxCount = Math.max(...weekData.map(d => d.count), 1);
+            const chartContainer = document.getElementById('weeklyChart');
+            
+            chartContainer.innerHTML = weekData.map(day => {
+                const height = day.count > 0 ? (day.count / maxCount) * 100 : 5;
+                const barClass = day.isToday ? 'chart-bar today' : 'chart-bar';
+                
+                return `
+                    <div class="${barClass}" style="height: ${height}%;">
+                        ${day.count > 0 ? `<div class="chart-bar-value">${day.count}</div>` : ''}
+                        <div class="chart-bar-label">${day.day}</div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Handle photo upload
