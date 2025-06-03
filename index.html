@@ -746,25 +746,110 @@
 
         let selectedType = 'normal';
 
-        // Debug info
-        let debugInfo = {
-            localStorageAvailable: false,
-            dataLoaded: false,
-            dataSaved: false
-        };
+        // IndexedDB storage for better persistence
+        let db;
+        const DB_NAME = 'PushupTrackerDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'pushupData';
 
-        // Check if localStorage is available
-        function isLocalStorageAvailable() {
-            try {
-                const test = '__localStorage_test__';
-                localStorage.setItem(test, test);
-                localStorage.removeItem(test);
-                debugInfo.localStorageAvailable = true;
-                return true;
-            } catch (e) {
-                debugInfo.localStorageAvailable = false;
-                return false;
-            }
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => {
+                    console.error('IndexedDB error:', request.error);
+                    reject(request.error);
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    console.log('IndexedDB initialized');
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+            });
+        }
+
+        // Save data to IndexedDB
+        function saveDataToDB() {
+            if (!db) return;
+            
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.put(data, 'userData');
+            
+            request.onsuccess = () => {
+                console.log('Data saved to IndexedDB');
+                showDebugMessage('Data saved to database');
+            };
+            
+            request.onerror = () => {
+                console.error('Error saving to IndexedDB:', request.error);
+                // Fallback to localStorage
+                saveData();
+            };
+        }
+
+        // Load data from IndexedDB
+        function loadDataFromDB() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Database not initialized');
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get('userData');
+                
+                request.onsuccess = () => {
+                    if (request.result) {
+                        const savedData = request.result;
+                        data = {
+                            ...data,
+                            ...savedData,
+                            pushupTypes: savedData.pushupTypes || { normal: 0, pike: 0, wide: 0, elevated: 0 }
+                        };
+                        
+                        // Check if it's a new day
+                        const today = new Date().toDateString();
+                        if (data.lastActiveDate !== today) {
+                            data.todayCount = 0;
+                            data.todayHistory = [];
+                            data.photos = [];
+                            data.lastActiveDate = today;
+                            saveDataToDB();
+                        }
+                        
+                        console.log('Data loaded from IndexedDB:', data.total);
+                        showDebugMessage(`Database loaded: ${data.total} total pushups`);
+                        resolve(true);
+                    } else {
+                        // Try localStorage fallback
+                        loadData();
+                        resolve(false);
+                    }
+                };
+                
+                request.onerror = () => {
+                    console.error('Error loading from IndexedDB:', request.error);
+                    loadData(); // Fallback
+                    reject(request.error);
+                };
+            });
+        }
+
+        // Update save functions to use IndexedDB
+        function saveAllData() {
+            saveDataToDB(); // Primary
+            saveData();     // Backup
         }
 
         // Load data from localStorage
@@ -1331,23 +1416,29 @@
         }
 
         // Initialize
-        window.addEventListener('load', function() {
-            loadData();
+        window.addEventListener('load', async function() {
+            try {
+                await initDB();
+                await loadDataFromDB();
+            } catch (e) {
+                console.log('IndexedDB not available, using localStorage');
+                loadData();
+            }
             updateUI();
             addExportButton();
             
             // Save data periodically
             setInterval(function() {
                 if (data.total > 0) {
-                    saveData();
+                    saveAllData();
                 }
-            }, 5000); // Save every 5 seconds
+            }, 5000);
         });
 
         // Save before page unload
         window.addEventListener('beforeunload', function() {
             if (data.total > 0) {
-                saveData();
+                saveAllData();
             }
         });
     </script>
