@@ -630,6 +630,18 @@
                 Download Challenge Report
             </button>
         </div>
+
+        <!-- Import Historical Data (Temporary) -->
+        <div class="download-section" id="importSection">
+            <button class="download-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);" onclick="importHistoricalData()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Import 8 Days History (2,230 pushups)
+            </button>
+        </div>
     </div>
 
     <!-- Voice Input Section -->
@@ -941,6 +953,11 @@
             if (data.total >= 10000 || data.total >= 5000) {
                 document.getElementById('downloadSection').style.display = 'block';
             }
+            
+            // Hide import button if data already exists
+            if (data.total > 2000) {
+                document.getElementById('importSection').style.display = 'none';
+            }
         }
 
         // Update weekly chart
@@ -1191,60 +1208,57 @@
             doc.save(`pushup-challenge-report-${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
+        // Import historical data manually
+        function importHistoricalData() {
+            if (confirm('This will add 8 days of historical data (2,230 total pushups). Continue?')) {
+                const today = new Date();
+                const historicalDays = [
+                    { daysAgo: 8, count: 300 },
+                    { daysAgo: 7, count: 300 },
+                    { daysAgo: 6, count: 300 },
+                    { daysAgo: 5, count: 300 },
+                    { daysAgo: 4, count: 230 },
+                    { daysAgo: 3, count: 300 },
+                    { daysAgo: 2, count: 300 },
+                    { daysAgo: 1, count: 300 }
+                ];
+                
+                historicalDays.forEach(day => {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - day.daysAgo);
+                    const dateStr = date.toDateString();
+                    
+                    // Add to daily data
+                    if (!data.dailyData[dateStr]) {
+                        data.dailyData[dateStr] = 0;
+                    }
+                    data.dailyData[dateStr] += day.count;
+                    
+                    // Add to total
+                    data.total += day.count;
+                    
+                    // Add to pushup types
+                    data.pushupTypes.normal += day.count;
+                });
+                
+                // Hide the import button after importing
+                document.getElementById('importSection').style.display = 'none';
+                
+                saveData();
+                updateUI();
+                
+                alert('Historical data imported successfully! Total: ' + data.total + ' pushups');
+            }
+        }
+
         // Initialize with historical data
         function addHistoricalData() {
-            // Check if we've already added historical data
-            if (localStorage.getItem('historicalDataAdded_v2')) {
-                return;
-            }
-            
-            // Clear any old historical data flag
-            localStorage.removeItem('historicalDataAdded');
-            
-            const today = new Date();
-            const historicalDays = [
-                { daysAgo: 8, count: 300 },
-                { daysAgo: 7, count: 300 },
-                { daysAgo: 6, count: 300 },
-                { daysAgo: 5, count: 300 },
-                { daysAgo: 4, count: 230 }, // Adjusted to make total 2230
-                { daysAgo: 3, count: 300 },
-                { daysAgo: 2, count: 300 },
-                { daysAgo: 1, count: 300 }
-            ];
-            
-            // Reset data for fresh start with correct numbers
-            data.total = 0;
-            data.dailyData = {};
-            data.pushupTypes = { normal: 0, pike: 0, wide: 0, elevated: 0 };
-            
-            let totalHistorical = 0;
-            
-            historicalDays.forEach(day => {
-                const date = new Date(today);
-                date.setDate(date.getDate() - day.daysAgo);
-                const dateStr = date.toDateString();
-                
-                data.dailyData[dateStr] = day.count;
-                totalHistorical += day.count;
-                
-                // Add to pushup types (assuming all were normal)
-                data.pushupTypes.normal += day.count;
-            });
-            
-            // Set total to exactly 2230
-            data.total = 2230;
-            data.pushupTypes.normal = 2230;
-            
-            // Mark that we've added historical data v2
-            localStorage.setItem('historicalDataAdded_v2', 'true');
-            
-            saveData();
+            // This function is now optional - data can be imported manually
+            return;
         }
 
         // Initialize
         loadData();
-        addHistoricalData();
         updateUI();
     </script>
 </body>
