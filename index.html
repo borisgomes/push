@@ -738,13 +738,23 @@
             try {
                 const saved = localStorage.getItem('pushupData');
                 if (saved) {
-                    data = JSON.parse(saved);
+                    const savedData = JSON.parse(saved);
+                    // Merge saved data with default structure to handle new properties
+                    data = {
+                        ...data,
+                        ...savedData,
+                        pushupTypes: savedData.pushupTypes || { normal: 0, pike: 0, wide: 0, elevated: 0 }
+                    };
+                    
                     // Check if it's a new day
-                    if (data.lastActiveDate !== new Date().toDateString()) {
+                    const today = new Date().toDateString();
+                    if (data.lastActiveDate !== today) {
+                        // Only reset daily-specific data
                         data.todayCount = 0;
                         data.todayHistory = [];
                         data.photos = [];
-                        data.lastActiveDate = new Date().toDateString();
+                        data.lastActiveDate = today;
+                        // Keep all other data intact
                         saveData();
                     }
                 }
@@ -1181,8 +1191,60 @@
             doc.save(`pushup-challenge-report-${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
+        // Initialize with historical data
+        function addHistoricalData() {
+            // Check if we've already added historical data
+            if (localStorage.getItem('historicalDataAdded_v2')) {
+                return;
+            }
+            
+            // Clear any old historical data flag
+            localStorage.removeItem('historicalDataAdded');
+            
+            const today = new Date();
+            const historicalDays = [
+                { daysAgo: 8, count: 300 },
+                { daysAgo: 7, count: 300 },
+                { daysAgo: 6, count: 300 },
+                { daysAgo: 5, count: 300 },
+                { daysAgo: 4, count: 230 }, // Adjusted to make total 2230
+                { daysAgo: 3, count: 300 },
+                { daysAgo: 2, count: 300 },
+                { daysAgo: 1, count: 300 }
+            ];
+            
+            // Reset data for fresh start with correct numbers
+            data.total = 0;
+            data.dailyData = {};
+            data.pushupTypes = { normal: 0, pike: 0, wide: 0, elevated: 0 };
+            
+            let totalHistorical = 0;
+            
+            historicalDays.forEach(day => {
+                const date = new Date(today);
+                date.setDate(date.getDate() - day.daysAgo);
+                const dateStr = date.toDateString();
+                
+                data.dailyData[dateStr] = day.count;
+                totalHistorical += day.count;
+                
+                // Add to pushup types (assuming all were normal)
+                data.pushupTypes.normal += day.count;
+            });
+            
+            // Set total to exactly 2230
+            data.total = 2230;
+            data.pushupTypes.normal = 2230;
+            
+            // Mark that we've added historical data v2
+            localStorage.setItem('historicalDataAdded_v2', 'true');
+            
+            saveData();
+        }
+
         // Initialize
         loadData();
+        addHistoricalData();
         updateUI();
     </script>
 </body>
