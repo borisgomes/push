@@ -1,1630 +1,192 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Pushups">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
-    
-    <!-- Register Service Worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('ServiceWorker registration successful');
-                }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
-        }
-    </script>
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHBhdGggZD0iTTYwIDExMEw2MCA3MEg4MEM4OCA3MCA5NSA3NyA5NSA4NVY5NUM5NSAxMDMgOTUgMTAzIDk1IDk1VjEwNUM5NSAxMTMgODggMTIwIDgwIDEyMEg2MFYxMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIwIDcwSDEwMFYxMTBIMTAwVjEyMEgxMjBDMTI4IDEyMCAxMzUgMTEzIDEzNSAxMDVWODVDMTM1IDc3IDEyOCA3MCAxMjAgNzBaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyIiB4MT0iMCIgeTE9IjAiIHgyPSIxODAiIHkyPSIxODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4=">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pushup Tracker</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #FAFBFD;
-            color: #2D3142;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        .app-container {
-            max-width: 500px;
+            font-family: Arial, sans-serif;
+            max-width: 400px;
             margin: 0 auto;
             padding: 20px;
-            padding-bottom: 100px;
+            background: #f0f0f0;
         }
-
-        /* Progress Section */
-        .progress-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 24px;
-            padding: 30px;
-            margin-bottom: 25px;
-            color: white;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .total-count {
+        .big-number {
             font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -1px;
+            font-weight: bold;
+            text-align: center;
+            color: #333;
         }
-
-        .total-label {
-            font-size: 16px;
-            opacity: 0.9;
+        .label {
+            text-align: center;
+            color: #666;
             margin-bottom: 20px;
         }
-
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.2);
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .progress-fill {
-            background: white;
-            height: 100%;
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        .progress-text {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        /* Motivational Quote */
-        .quote-section {
-            text-align: center;
-            padding: 0 20px 20px 20px;
-            margin-bottom: 10px;
-        }
-
-        .quote-text {
-            font-family: 'Courier Prime', monospace;
-            font-size: 16px;
-            color: #2D3142;
-            line-height: 1.5;
-            font-weight: 400;
-            margin: 0;
-            letter-spacing: -0.5px;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stats-grid.three-col {
-            grid-template-columns: 1fr 1fr 1fr;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 16px;
+        button {
+            width: 22%;
             padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 600;
-            color: #2D3142;
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #9CA3AF;
-        }
-
-        .stat-card.today {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin: 1%;
+            font-size: 20px;
+            border: none;
+            border-radius: 5px;
+            background: #007AFF;
             color: white;
+            cursor: pointer;
         }
-
-        .stat-card.today .stat-value,
-        .stat-card.today .stat-label {
-            color: white;
+        button:active {
+            background: #005ACC;
         }
-
-        .stat-card.streak {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        .import-btn {
+            width: 96%;
+            background: #34C759;
+            margin: 2%;
         }
-
-        .stat-card.streak .stat-value,
-        .stat-card.streak .stat-label {
-            color: white;
-        }
-
-        .streak-emoji {
-            display: inline-block;
-            margin-left: 5px;
-            font-size: 24px;
-        }
-
-        /* Prediction Section */
-        .prediction-section {
-            background: #F3F4F6;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 20px;
+        .stats {
+            display: flex;
+            justify-content: space-around;
             text-align: center;
         }
-
-        .prediction-text {
-            font-size: 15px;
-            color: #6B7280;
-            margin: 0;
-        }
-
-        .prediction-date {
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        /* Weekly Chart */
-        .chart-section {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        }
-
-        .chart-container {
-            margin-top: 20px;
-            height: 150px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .chart-bar {
-            flex: 1;
-            background: linear-gradient(to top, #667eea, #764ba2);
-            border-radius: 8px 8px 0 0;
-            min-height: 4px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .chart-bar:hover {
-            opacity: 0.8;
-        }
-
-        .chart-bar-label {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            color: #9CA3AF;
-            white-space: nowrap;
-        }
-
-        .chart-bar-value {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-            font-weight: 600;
-            color: #667eea;
-            white-space: nowrap;
-        }
-
-        /* Pushup Type Selector */
-        .type-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-            overflow-x: auto;
-            padding: 2px;
-        }
-
-        .type-btn {
-            padding: 8px 16px;
-            background: #F3F4F6;
-            border: 2px solid transparent;
-            border-radius: 20px;
-            font-size: 14px;
-            color: #6B7280;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .type-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: transparent;
-        }
-
-        .type-btn:hover:not(.active) {
-            border-color: #667eea;
-        }
-
-        /* Voice Input Section */
-        .voice-section {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 20px;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
-
-        .voice-container {
-            max-width: 500px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .quick-add-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .quick-add-btn {
-            padding: 10px 16px;
-            background: #F3F4F6;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #6B7280;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .quick-add-btn:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .voice-btn {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .voice-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .voice-btn.listening {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
-            }
-        }
-
-        .voice-btn svg {
-            width: 28px;
-            height: 28px;
-            stroke: white;
-            stroke-width: 2;
-            fill: none;
-        }
-
-        .manual-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .manual-input input {
-            padding: 12px 16px;
-            border: 2px solid #E5E7EB;
-            border-radius: 12px;
-            font-size: 16px;
-            width: 100px;
-            text-align: center;
-            transition: border-color 0.3s ease;
-        }
-
-        .manual-input input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .add-btn {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .add-btn:hover {
-            transform: scale(1.05);
-        }
-
-        /* Today's Activity */
-        .activity-section {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2D3142;
-        }
-
-        .photo-btn {
-            background: #F3F4F6;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 16px;
-            font-size: 14px;
-            color: #6B7280;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: background 0.3s ease;
-        }
-
-        .photo-btn:hover {
-            background: #E5E7EB;
-        }
-
-        .photo-btn svg {
-            width: 16px;
-            height: 16px;
-            stroke: #6B7280;
-            stroke-width: 2;
-            fill: none;
-        }
-
-        .activity-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .activity-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #F3F4F6;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-time {
-            font-size: 14px;
-            color: #9CA3AF;
-        }
-
-        .activity-count {
-            font-size: 16px;
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 0;
-            color: #9CA3AF;
-            font-size: 14px;
-        }
-
-        /* Progress Photos */
-        .photos-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .photo-thumb {
-            aspect-ratio: 1;
-            border-radius: 12px;
-            background: #F3F4F6;
-            overflow: hidden;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .photo-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .voice-status {
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2D3142;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .voice-status.show {
-            opacity: 1;
-        }
-
-        /* Download Report Button */
-        .download-section {
-            text-align: center;
-            margin: 30px 0;
-            padding: 0 20px;
-        }
-
-        .download-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .download-btn:disabled {
-            background: #9CA3AF;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .download-btn svg {
-            width: 20px;
-            height: 20px;
-            stroke: white;
-            stroke-width: 2;
-            fill: none;
-        }
-
-        /* Hidden file input */
-        #photoInput {
-            display: none;
+        .stat h3 {
+            margin: 5px;
+            color: #007AFF;
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Progress Section -->
-        <div class="progress-section">
-            <div class="total-count" id="totalCount">0</div>
-            <div class="total-label">of 10,000 pushups</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+    <div class="card">
+        <div class="big-number" id="total">0</div>
+        <div class="label">of 10,000 pushups</div>
+        
+        <div class="stats">
+            <div class="stat">
+                <h3 id="today">0</h3>
+                <small>Today</small>
             </div>
-            <div class="progress-text" id="progressText">0% complete</div>
-        </div>
-
-        <!-- Motivational Quote -->
-        <div class="quote-section">
-            <p class="quote-text" id="dailyQuote">Every pushup is a step closer to your strongest self.</p>
-            <p style="font-size: 12px; color: #ccc; margin: 5px 0;" id="debugInfo"></p>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid three-col">
-            <div class="stat-card today">
-                <div class="stat-value" id="todayCount">0</div>
-                <div class="stat-label">Today</div>
+            <div class="stat">
+                <h3 id="average">0</h3>
+                <small>Daily Avg</small>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="avgPerDay">0</div>
-                <div class="stat-label">Daily Avg</div>
-            </div>
-            <div class="stat-card streak">
-                <div class="stat-value">
-                    <span id="streakCount">0</span>
-                    <span class="streak-emoji">🔥</span>
-                </div>
-                <div class="stat-label">Day Streak</div>
-            </div>
-        </div>
-
-        <!-- Progress Prediction -->
-        <div class="prediction-section">
-            <p class="prediction-text" id="predictionText">Start tracking to see your predicted completion date</p>
-        </div>
-
-        <!-- Weekly Chart -->
-        <div class="chart-section">
-            <h3 class="section-title">This Week</h3>
-            <div class="chart-container" id="weeklyChart"></div>
-        </div>
-
-        <!-- Today's Activity -->
-        <div class="activity-section">
-            <div class="section-header">
-                <h3 class="section-title">Today's Activity</h3>
-                <button class="photo-btn" onclick="document.getElementById('photoInput').click()">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                    Add Photo
-                </button>
-            </div>
-            <div class="activity-list" id="activityList">
-                <div class="empty-state">Start your workout to see activity</div>
-            </div>
-            <div class="photos-grid" id="photosGrid"></div>
-        </div>
-
-        <!-- Download Report Section -->
-        <div class="download-section" id="downloadSection" style="display: none;">
-            <button class="download-btn" onclick="generateReport()">
-                <svg viewBox="0 0 24 24">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Download Challenge Report
-            </button>
-        </div>
-
-        <!-- Import Historical Data (Temporary) -->
-        <div class="download-section" id="importSection">
-            <button class="download-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);" onclick="importHistoricalData()">
-                <svg viewBox="0 0 24 24">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                Import 8 Days History (2,230 pushups)
-            </button>
-            
-            <!-- Debug button -->
-            <button class="download-btn" style="background: #6b7280; margin-top: 10px;" onclick="showDebugInfo()">
-                Show Debug Info
-            </button>
-        </div>
-    </div>
-
-    <!-- Voice Input Section -->
-    <div class="voice-section">
-        <div class="voice-container" style="flex-direction: column; gap: 15px;">
-            <div class="type-selector">
-                <button class="type-btn active" data-type="normal" onclick="selectType('normal')">Normal</button>
-                <button class="type-btn" data-type="pike" onclick="selectType('pike')">Pike</button>
-                <button class="type-btn" data-type="wide" onclick="selectType('wide')">Wide</button>
-                <button class="type-btn" data-type="elevated" onclick="selectType('elevated')">Elevated</button>
-            </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <div class="quick-add-buttons">
-                    <button class="quick-add-btn" onclick="addPushups(5)">5</button>
-                    <button class="quick-add-btn" onclick="addPushups(10)">10</button>
-                </div>
-                <div style="position: relative;">
-                    <div class="voice-status" id="voiceStatus"></div>
-                    <button class="voice-btn" id="voiceBtn">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z"/>
-                            <path d="M19 10v2a7 7 0 01-14 0v-2"/>
-                            <path d="M12 19v4"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="quick-add-buttons">
-                    <button class="quick-add-btn" onclick="addPushups(15)">15</button>
-                    <button class="quick-add-btn" onclick="addPushups(20)">20</button>
-                </div>
+            <div class="stat">
+                <h3 id="days">0</h3>
+                <small>Days</small>
             </div>
         </div>
     </div>
 
-    <!-- Hidden file input -->
-    <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
+    <div class="card">
+        <button onclick="add(5)">+5</button>
+        <button onclick="add(10)">+10</button>
+        <button onclick="add(15)">+15</button>
+        <button onclick="add(20)">+20</button>
+        
+        <button class="import-btn" onclick="importData()" id="importBtn">
+            Import Your 8 Days (2,230 pushups)
+        </button>
+    </div>
 
     <script>
-        // Initialize Firebase (replace with your config)
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        // Super simple data storage
+        var total = parseInt(localStorage.getItem('total') || '0');
+        var todayCount = parseInt(localStorage.getItem('today') || '0');
+        var lastDate = localStorage.getItem('lastDate') || '';
+        var startDate = localStorage.getItem('startDate') || new Date().toDateString();
+        var dailyData = JSON.parse(localStorage.getItem('daily') || '{}');
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        
-        // Generate or get unique user ID
-        function getUserId() {
-            let userId = localStorage.getItem('userId');
-            if (!userId) {
-                userId = 'user_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('userId', userId);
-            }
-            return userId;
-        }
-        
-        const userId = getUserId();
-        const userRef = database.ref('users/' + userId);
-
-        // Motivational quotes
-        const quotes = [
-            "Every pushup is a step closer to your strongest self.",
-            "Your body can stand almost anything – it's your mind you have to convince.",
-            "The pain you feel today will be the strength you feel tomorrow.",
-            "Champions are made from something deep inside them – a desire, a dream, a vision.",
-            "Success starts with self-discipline.",
-            "You don't have to be great to start, but you have to start to be great.",
-            "The only bad workout is the one that didn't happen.",
-            "Strength doesn't come from what you can do, it comes from overcoming what you once couldn't.",
-            "Push yourself because no one else is going to do it for you.",
-            "Great things never come from comfort zones.",
-            "Your limitation is only your imagination.",
-            "It's going to be hard, but hard does not mean impossible.",
-            "Dream it, wish it, do it.",
-            "Success doesn't just find you – you have to go out and get it.",
-            "The harder you work for something, the greater you'll feel when you achieve it.",
-            "Don't stop when you're tired, stop when you're done.",
-            "Wake up with determination, go to bed with satisfaction.",
-            "Do something today that your future self will thank you for.",
-            "Little things make big days.",
-            "It's never too late to become what you might have been.",
-            "The body achieves what the mind believes.",
-            "You are stronger than you think.",
-            "Every champion was once a contender who refused to give up.",
-            "Your only limit is you.",
-            "Make yourself proud.",
-            "Work hard in silence, let success make the noise.",
-            "The pain of discipline weighs ounces, the pain of regret weighs tons.",
-            "Results happen over time, not overnight.",
-            "Believe in yourself and all that you are.",
-            "The difference between try and triumph is a little 'umph'.",
-            "Strive for progress, not perfection."
-        ];
-
-        // Get daily quote based on date
-        function getDailyQuote() {
-            const today = new Date();
-            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
-            const quoteIndex = dayOfYear % quotes.length;
-            return quotes[quoteIndex];
+        // Check if new day
+        var todayDate = new Date().toDateString();
+        if (lastDate !== todayDate) {
+            todayCount = 0;
+            lastDate = todayDate;
+            localStorage.setItem('lastDate', lastDate);
+            localStorage.setItem('today', '0');
         }
 
-        // Data structure
-        let data = {
-            total: 0,
-            todayCount: 0,
-            todayHistory: [],
-            photos: [],
-            startDate: new Date().toDateString(),
-            lastActiveDate: new Date().toDateString(),
-            dailyData: {},
-            weeklyData: {},
-            streak: 0,
-            lastStreakDate: null,
-            pushupTypes: {
-                normal: 0,
-                pike: 0,
-                wide: 0,
-                elevated: 0
-            }
-        };
-
-        let selectedType = 'normal';
-
-        // IndexedDB storage for better persistence
-        let db;
-        const DB_NAME = 'PushupTrackerDB';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'pushupData';
-
-        // Initialize IndexedDB
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                
-                request.onerror = () => {
-                    console.error('IndexedDB error:', request.error);
-                    reject(request.error);
-                };
-                
-                request.onsuccess = () => {
-                    db = request.result;
-                    console.log('IndexedDB initialized');
-                    resolve(db);
-                };
-                
-                request.onupgradeneeded = (event) => {
-                    db = event.target.result;
-                    if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        db.createObjectStore(STORE_NAME);
-                    }
-                };
-            });
-        }
-
-        // Save data to IndexedDB
-        function saveDataToDB() {
-            if (!db) return;
+        // Add pushups
+        function add(num) {
+            total += num;
+            todayCount += num;
             
-            const transaction = db.transaction([STORE_NAME], 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.put(data, 'userData');
+            // Save to daily data
+            dailyData[todayDate] = (dailyData[todayDate] || 0) + num;
             
-            request.onsuccess = () => {
-                console.log('Data saved to IndexedDB');
-                showDebugMessage('Data saved to database');
-            };
+            // Save everything
+            localStorage.setItem('total', total);
+            localStorage.setItem('today', todayCount);
+            localStorage.setItem('daily', JSON.stringify(dailyData));
             
-            request.onerror = () => {
-                console.error('Error saving to IndexedDB:', request.error);
-                // Fallback to localStorage
-                saveData();
-            };
+            updateDisplay();
         }
 
-        // Load data from IndexedDB
-        function loadDataFromDB() {
-            return new Promise((resolve, reject) => {
-                if (!db) {
-                    reject('Database not initialized');
-                    return;
-                }
+        // Import your historical data
+        function importData() {
+            if (confirm('Import 8 days of data (2,230 pushups)?')) {
+                // Reset and add historical data
+                total = 2230;
+                dailyData = {};
                 
-                const transaction = db.transaction([STORE_NAME], 'readonly');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.get('userData');
-                
-                request.onsuccess = () => {
-                    if (request.result) {
-                        const savedData = request.result;
-                        data = {
-                            ...data,
-                            ...savedData,
-                            pushupTypes: savedData.pushupTypes || { normal: 0, pike: 0, wide: 0, elevated: 0 }
-                        };
-                        
-                        // Check if it's a new day
-                        const today = new Date().toDateString();
-                        if (data.lastActiveDate !== today) {
-                            data.todayCount = 0;
-                            data.todayHistory = [];
-                            data.photos = [];
-                            data.lastActiveDate = today;
-                            saveDataToDB();
-                        }
-                        
-                        console.log('Data loaded from IndexedDB:', data.total);
-                        showDebugMessage(`Database loaded: ${data.total} total pushups`);
-                        resolve(true);
+                // Add 8 days of history
+                var d = new Date();
+                for (var i = 8; i >= 1; i--) {
+                    var date = new Date(d);
+                    date.setDate(date.getDate() - i);
+                    var dateStr = date.toDateString();
+                    
+                    if (i === 5) {
+                        dailyData[dateStr] = 230;  // Day with 230
                     } else {
-                        // Try localStorage fallback
-                        loadData();
-                        resolve(false);
-                    }
-                };
-                
-                request.onerror = () => {
-                    console.error('Error loading from IndexedDB:', request.error);
-                    loadData(); // Fallback
-                    reject(request.error);
-                };
-            });
-        }
-
-        // Update save functions to use IndexedDB
-        function saveAllData() {
-            saveDataToDB(); // Primary
-            saveData();     // Backup
-        }
-
-        // Super simple solution: Save data in URL
-        function generateUserId() {
-            // Check if user already has an ID in the URL
-            const urlParams = new URLSearchParams(window.location.search);
-            let userId = urlParams.get('id');
-            
-            if (!userId) {
-                // Generate new ID
-                userId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-                // Redirect to URL with ID
-                window.location.href = window.location.pathname + '?id=' + userId;
-            }
-            
-            return userId;
-        }
-
-        // Save data using the user ID
-        function saveData() {
-            const userId = generateUserId();
-            const key = 'pushup_' + userId;
-            
-            try {
-                // Try multiple storage methods
-                localStorage.setItem(key, JSON.stringify(data));
-                sessionStorage.setItem(key, JSON.stringify(data));
-                
-                // Also save a backup with just the ID
-                localStorage.setItem('lastUserId', userId);
-                
-                showDebugMessage('Data saved');
-            } catch (e) {
-                console.error('Save failed:', e);
-                showDebugMessage('Save failed - bookmark this page!');
-            }
-        }
-
-        // Load data using the user ID
-        function loadData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('id');
-            
-            if (!userId) {
-                // Check if we have a last used ID
-                const lastId = localStorage.getItem('lastUserId');
-                if (lastId) {
-                    window.location.href = window.location.pathname + '?id=' + lastId;
-                    return;
-                }
-            }
-            
-            const key = 'pushup_' + userId;
-            
-            try {
-                // Try to load from storage
-                let saved = localStorage.getItem(key) || sessionStorage.getItem(key);
-                
-                if (saved) {
-                    const savedData = JSON.parse(saved);
-                    data = {
-                        ...data,
-                        ...savedData,
-                        pushupTypes: savedData.pushupTypes || { normal: 0, pike: 0, wide: 0, elevated: 0 }
-                    };
-                    
-                    // Check if new day
-                    const today = new Date().toDateString();
-                    if (data.lastActiveDate !== today) {
-                        data.todayCount = 0;
-                        data.todayHistory = [];
-                        data.photos = [];
-                        data.lastActiveDate = today;
-                        saveData();
-                    }
-                    
-                    showDebugMessage(`Loaded: ${data.total} pushups`);
-                }
-            } catch (e) {
-                console.error('Load failed:', e);
-            }
-        }
-
-        // Show debug messages
-        function showDebugMessage(message) {
-            console.log('Debug:', message);
-            // Temporarily show in UI for debugging
-            const debugEl = document.getElementById('debugInfo');
-            if (debugEl) {
-                debugEl.textContent = message;
-                setTimeout(() => {
-                    debugEl.textContent = '';
-                }, 3000);
-            }
-        }
-
-        // Calculate streak - Fixed version
-        function calculateStreak() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const sortedDates = Object.keys(data.dailyData || {})
-                .map(dateStr => new Date(dateStr))
-                .sort((a, b) => b - a);
-            
-            if (sortedDates.length === 0) return 0;
-            
-            let streak = 0;
-            let checkDate = new Date(today);
-            let foundTodayData = false;
-            
-            // Check if we have data for today
-            const todayStr = today.toDateString();
-            if (data.dailyData[todayStr] && data.dailyData[todayStr] > 0) {
-                foundTodayData = true;
-            }
-            
-            // If no data for today, start checking from yesterday
-            if (!foundTodayData && sortedDates[0] < today) {
-                checkDate.setDate(checkDate.getDate() - 1);
-            }
-            
-            // Count consecutive days
-            while (true) {
-                const dateStr = checkDate.toDateString();
-                if (data.dailyData[dateStr] && data.dailyData[dateStr] > 0) {
-                    streak++;
-                    checkDate.setDate(checkDate.getDate() - 1);
-                } else {
-                    break;
-                }
-            }
-            
-            return streak;
-        }
-
-        // Calculate progress prediction
-        function calculatePrediction() {
-            const daysActive = getDaysActive();
-            if (daysActive === 0 || data.total === 0) return null;
-            
-            const avgPerDay = data.total / daysActive;
-            const remaining = 10000 - data.total;
-            const daysToComplete = Math.ceil(remaining / avgPerDay);
-            
-            const predictedDate = new Date();
-            predictedDate.setDate(predictedDate.getDate() + daysToComplete);
-            
-            return {
-                date: predictedDate,
-                daysRemaining: daysToComplete
-            };
-        }
-
-        // Get weekly data
-        function getWeeklyData() {
-            const weekData = [];
-            const today = new Date();
-            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toDateString();
-                const dayName = daysOfWeek[date.getDay()];
-                const count = data.dailyData[dateStr] || 0;
-                
-                weekData.push({
-                    day: dayName,
-                    date: dateStr,
-                    count: count,
-                    isToday: i === 0
-                });
-            }
-            
-            return weekData;
-        }
-
-        // Select pushup type
-        function selectType(type) {
-            selectedType = type;
-            document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Find the button that was clicked and make it active
-            document.querySelector(`.type-btn[data-type="${type}"]`).classList.add('active');
-        }
-
-        // Add pushups - ensure this works after import
-        function addPushups(count) {
-            if (typeof count !== 'number' || count <= 0) {
-                console.error('Invalid count:', count);
-                return;
-            }
-            
-            const today = new Date().toDateString();
-            
-            data.total += count;
-            data.todayCount += count;
-            
-            // Update daily data
-            if (!data.dailyData) {
-                data.dailyData = {};
-            }
-            if (!data.dailyData[today]) {
-                data.dailyData[today] = 0;
-            }
-            data.dailyData[today] += count;
-            
-            // Update pushup types
-            if (!data.pushupTypes) {
-                data.pushupTypes = { normal: 0, pike: 0, wide: 0, elevated: 0 };
-            }
-            data.pushupTypes[selectedType] += count;
-            
-            // Add to history with type
-            if (!data.todayHistory) {
-                data.todayHistory = [];
-            }
-            data.todayHistory.push({
-                count: count,
-                type: selectedType,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            
-            updateUI();
-            saveData();
-            
-            // Celebrate milestone
-            if (data.total >= 10000 && data.total - count < 10000) {
-                alert('🎉 Congratulations! You\'ve completed the 10,000 pushup challenge!');
-            }
-        }
-
-        // Make functions globally accessible
-        window.addPushups = addPushups;
-        window.selectType = selectType;
-        window.importHistoricalData = importHistoricalData;
-        window.showDebugInfo = showDebugInfo;
-        window.generateReport = generateReport;
-        window.handlePhotoUpload = handlePhotoUpload;
-
-        // Update UI
-        function updateUI() {
-            // Update total and progress
-            document.getElementById('totalCount').textContent = data.total.toLocaleString();
-            const progressPercent = Math.min(100, (data.total / 10000) * 100);
-            document.getElementById('progressFill').style.width = progressPercent + '%';
-            document.getElementById('progressText').textContent = progressPercent.toFixed(1) + '% complete';
-            
-            // Update daily quote
-            document.getElementById('dailyQuote').textContent = getDailyQuote();
-            
-            // Update stats
-            document.getElementById('todayCount').textContent = data.todayCount;
-            const daysActive = getDaysActive();
-            const avgPerDay = daysActive > 0 ? Math.round(data.total / daysActive) : 0;
-            document.getElementById('avgPerDay').textContent = avgPerDay;
-            
-            // Update streak
-            const streak = calculateStreak();
-            document.getElementById('streakCount').textContent = streak;
-            
-            // Update prediction
-            const prediction = calculatePrediction();
-            const predictionEl = document.getElementById('predictionText');
-            if (prediction && data.total < 10000) {
-                const dateStr = prediction.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                predictionEl.innerHTML = `At this pace, you'll reach 10,000 on <span class="prediction-date">${dateStr}</span> (${prediction.daysRemaining} days)`;
-            } else if (data.total >= 10000) {
-                predictionEl.innerHTML = '<span class="prediction-date">Congratulations! You\'ve completed the challenge!</span>';
-            } else {
-                predictionEl.textContent = 'Start tracking to see your predicted completion date';
-            }
-            
-            // Update weekly chart
-            updateWeeklyChart();
-            
-            // Update activity list
-            const activityList = document.getElementById('activityList');
-            if (data.todayHistory.length > 0) {
-                activityList.innerHTML = data.todayHistory.slice().reverse().map(item => `
-                    <div class="activity-item">
-                        <span class="activity-time">${item.time}</span>
-                        <span class="activity-count">+${item.count} ${item.type || 'normal'}</span>
-                    </div>
-                `).join('');
-            } else {
-                activityList.innerHTML = '<div class="empty-state">Start your workout to see activity</div>';
-            }
-            
-            // Update photos
-            updatePhotosGrid();
-            
-            // Show download button if challenge is complete or significant progress
-            if (data.total >= 10000 || data.total >= 5000) {
-                document.getElementById('downloadSection').style.display = 'block';
-            }
-            
-            // Hide import button if data already exists
-            if (data.total > 2000) {
-                document.getElementById('importSection').style.display = 'none';
-            }
-        }
-
-        // Update weekly chart
-        function updateWeeklyChart() {
-            const weekData = getWeeklyData();
-            const maxCount = Math.max(...weekData.map(d => d.count), 1);
-            const chartContainer = document.getElementById('weeklyChart');
-            
-            chartContainer.innerHTML = weekData.map(day => {
-                const height = day.count > 0 ? (day.count / maxCount) * 100 : 5;
-                const barClass = day.isToday ? 'chart-bar today' : 'chart-bar';
-                
-                return `
-                    <div class="${barClass}" style="height: ${height}%;">
-                        ${day.count > 0 ? `<div class="chart-bar-value">${day.count}</div>` : ''}
-                        <div class="chart-bar-label">${day.day}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Handle photo upload
-        function handlePhotoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    data.photos.push({
-                        src: e.target.result,
-                        time: new Date().toISOString()
-                    });
-                    saveData();
-                    updatePhotosGrid();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Update photos grid
-        function updatePhotosGrid() {
-            const grid = document.getElementById('photosGrid');
-            if (data.photos.length > 0) {
-                grid.innerHTML = data.photos.map(photo => `
-                    <div class="photo-thumb">
-                        <img src="${photo.src}" alt="Progress photo">
-                    </div>
-                `).join('');
-            } else {
-                grid.innerHTML = '';
-            }
-        }
-
-        // Voice recognition
-        let recognition;
-        let isListening = false;
-
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-
-            recognition.onstart = function() {
-                isListening = true;
-                document.getElementById('voiceBtn').classList.add('listening');
-                showVoiceStatus('Listening...');
-            };
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                const number = parseInt(transcript);
-                
-                if (!isNaN(number) && number > 0 && number < 1000) {
-                    addPushups(number);
-                    showVoiceStatus(`Added ${number} pushups!`);
-                } else {
-                    showVoiceStatus('Please say a number');
-                }
-            };
-
-            recognition.onerror = function(event) {
-                showVoiceStatus('Error: ' + event.error);
-                isListening = false;
-                document.getElementById('voiceBtn').classList.remove('listening');
-            };
-
-            recognition.onend = function() {
-                isListening = false;
-                document.getElementById('voiceBtn').classList.remove('listening');
-            };
-        }
-
-        // Voice button handler
-        document.getElementById('voiceBtn').addEventListener('click', function() {
-            if (!recognition) {
-                alert('Voice recognition is not supported in your browser.');
-                return;
-            }
-
-            if (isListening) {
-                recognition.stop();
-            } else {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    showVoiceStatus('Voice recognition failed');
-                }
-            }
-        });
-
-        // Show voice status
-        function showVoiceStatus(message) {
-            const status = document.getElementById('voiceStatus');
-            status.textContent = message;
-            status.classList.add('show');
-            setTimeout(() => {
-                status.classList.remove('show');
-            }, 3000);
-        }
-
-        // Manual input
-        function addManualPushups() {
-            const input = document.getElementById('manualInput');
-            const count = parseInt(input.value);
-            
-            if (!isNaN(count) && count > 0 && count < 1000) {
-                addPushups(count);
-                input.value = '';
-            }
-        }
-
-        // Enter key handler
-        document.getElementById('manualInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addManualPushups();
-            }
-        });
-
-        // Generate PDF Report
-        function generateReport() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Title
-            doc.setFontSize(24);
-            doc.setTextColor(102, 126, 234);
-            doc.text('10,000 Pushup Challenge Report', 105, 20, { align: 'center' });
-            
-            // Date
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
-            
-            // Summary Stats
-            doc.setFontSize(16);
-            doc.setTextColor(40);
-            doc.text('Challenge Summary', 20, 50);
-            
-            doc.setFontSize(12);
-            doc.setTextColor(60);
-            const stats = [
-                `Total Pushups: ${data.total.toLocaleString()}`,
-                `Days Active: ${getDaysActive()}`,
-                `Average Per Day: ${Math.round(data.total / getDaysActive())}`,
-                `Best Streak: ${calculateStreak()} days`,
-                `Challenge Status: ${data.total >= 10000 ? 'COMPLETED! 🎉' : `${((data.total/10000)*100).toFixed(1)}% Complete`}`
-            ];
-            
-            stats.forEach((stat, index) => {
-                doc.text(stat, 20, 65 + (index * 8));
-            });
-            
-            // Pushup Types Breakdown
-            doc.setFontSize(16);
-            doc.setTextColor(40);
-            doc.text('Pushup Types Breakdown', 20, 110);
-            
-            doc.setFontSize(12);
-            doc.setTextColor(60);
-            const types = Object.entries(data.pushupTypes);
-            types.forEach(([type, count], index) => {
-                const percentage = data.total > 0 ? ((count/data.total)*100).toFixed(1) : 0;
-                doc.text(`${type.charAt(0).toUpperCase() + type.slice(1)}: ${count} (${percentage}%)`, 20, 125 + (index * 8));
-            });
-            
-            // Daily Progress Chart
-            doc.setFontSize(16);
-            doc.setTextColor(40);
-            doc.text('Daily Progress', 20, 165);
-            
-            // Create simple bar chart
-            const dailyEntries = Object.entries(data.dailyData).slice(-30); // Last 30 days
-            if (dailyEntries.length > 0) {
-                const maxDaily = Math.max(...dailyEntries.map(([_, count]) => count));
-                const chartWidth = 170;
-                const chartHeight = 50;
-                const barWidth = chartWidth / dailyEntries.length;
-                
-                doc.setDrawColor(200);
-                doc.rect(20, 175, chartWidth, chartHeight);
-                
-                dailyEntries.forEach(([date, count], index) => {
-                    const barHeight = (count / maxDaily) * chartHeight;
-                    const x = 20 + (index * barWidth);
-                    const y = 175 + chartHeight - barHeight;
-                    
-                    // Gradient effect
-                    doc.setFillColor(102 + index * 2, 126 - index, 234);
-                    doc.rect(x + 1, y, barWidth - 2, barHeight, 'F');
-                });
-                
-                // Chart labels
-                doc.setFontSize(8);
-                doc.setTextColor(100);
-                doc.text('First Day', 20, 235);
-                doc.text('Last Day', 190, 235, { align: 'right' });
-            }
-            
-            // Milestones
-            doc.setFontSize(16);
-            doc.setTextColor(40);
-            doc.text('Key Milestones', 20, 255);
-            
-            doc.setFontSize(10);
-            doc.setTextColor(60);
-            const milestones = [
-                { count: 100, label: 'First 100' },
-                { count: 1000, label: 'First 1,000' },
-                { count: 5000, label: 'Halfway There!' },
-                { count: 10000, label: 'Challenge Complete!' }
-            ];
-            
-            let milestoneY = 265;
-            milestones.forEach(milestone => {
-                if (data.total >= milestone.count) {
-                    doc.text(`✓ ${milestone.label} - Achieved!`, 25, milestoneY);
-                    milestoneY += 6;
-                }
-            });
-            
-            // Footer
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text('Generated by Pushup Tracker App', 105, 290, { align: 'center' });
-            
-            // Save the PDF
-            doc.save(`pushup-challenge-report-${new Date().toISOString().split('T')[0]}.pdf`);
-        }
-
-        // Import historical data manually
-        function importHistoricalData() {
-            if (confirm('This will add 8 days of historical data (2,230 total pushups). Continue?')) {
-                const today = new Date();
-                const historicalDays = [
-                    { daysAgo: 8, count: 300 },
-                    { daysAgo: 7, count: 300 },
-                    { daysAgo: 6, count: 300 },
-                    { daysAgo: 5, count: 300 },
-                    { daysAgo: 4, count: 230 },
-                    { daysAgo: 3, count: 300 },
-                    { daysAgo: 2, count: 300 },
-                    { daysAgo: 1, count: 300 }
-                ];
-                
-                // Clear existing data for fresh import
-                data.total = 0;
-                data.dailyData = {};
-                data.pushupTypes = { normal: 0, pike: 0, wide: 0, elevated: 0 };
-                
-                // Add each historical day
-                historicalDays.forEach(day => {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - day.daysAgo);
-                    const dateStr = date.toDateString();
-                    
-                    // Add to daily data
-                    data.dailyData[dateStr] = day.count;
-                    
-                    // Add to total
-                    data.total += day.count;
-                    
-                    // Add to pushup types (assuming all normal)
-                    data.pushupTypes.normal += day.count;
-                });
-                
-                // Set the start date to 8 days ago
-                const startDate = new Date(today);
-                startDate.setDate(startDate.getDate() - 8);
-                data.startDate = startDate.toDateString();
-                
-                // Update last active date to yesterday (since today might not have data yet)
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                data.lastActiveDate = yesterday.toDateString();
-                
-                // Calculate today's count if any
-                const todayStr = today.toDateString();
-                data.todayCount = data.dailyData[todayStr] || 0;
-                
-                // Hide the import button after importing
-                document.getElementById('importSection').style.display = 'none';
-                
-                // Save and update everything
-                saveData();
-                updateUI();
-                
-                alert('Historical data imported successfully!\nTotal: ' + data.total + ' pushups\nStreak: ' + calculateStreak() + ' days');
-            }
-        }
-
-        // Initialize with historical data
-        function addHistoricalData() {
-            // This function is now optional - data can be imported manually
-            return;
-        }
-
-        // Show debug information
-        function showDebugInfo() {
-            const debugInfo = {
-                total: data.total,
-                todayCount: data.todayCount,
-                dailyDataCount: Object.keys(data.dailyData || {}).length,
-                dailyData: data.dailyData,
-                streak: calculateStreak(),
-                daysActive: getDaysActive(),
-                avgPerDay: Math.round(data.total / getDaysActive()),
-                startDate: data.startDate,
-                lastActiveDate: data.lastActiveDate,
-                pushupTypes: data.pushupTypes
-            };
-            
-            console.log('Debug Info:', debugInfo);
-            alert('Debug Info:\n' + 
-                  'Total: ' + debugInfo.total + '\n' +
-                  'Today: ' + debugInfo.todayCount + '\n' +
-                  'Days tracked: ' + debugInfo.dailyDataCount + '\n' +
-                  'Streak: ' + debugInfo.streak + '\n' +
-                  'Avg/Day: ' + debugInfo.avgPerDay + '\n' +
-                  'Check console for full data');
-        }
-
-        // Initialize - Simple version
-        window.onload = function() {
-            console.log('App loading...');
-            loadData();
-            updateUI();
-            
-            // Set up voice recognition
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = 'en-US';
-
-                recognition.onstart = function() {
-                    isListening = true;
-                    document.getElementById('voiceBtn').classList.add('listening');
-                    showVoiceStatus('Listening...');
-                };
-
-                recognition.onresult = function(event) {
-                    var transcript = event.results[0][0].transcript;
-                    var number = parseInt(transcript);
-                    
-                    if (!isNaN(number) && number > 0 && number < 1000) {
-                        addPushups(number);
-                        showVoiceStatus('Added ' + number + ' pushups!');
-                    } else {
-                        showVoiceStatus('Please say a number');
-                    }
-                };
-
-                recognition.onerror = function(event) {
-                    showVoiceStatus('Error: ' + event.error);
-                    isListening = false;
-                    document.getElementById('voiceBtn').classList.remove('listening');
-                };
-
-                recognition.onend = function() {
-                    isListening = false;
-                    document.getElementById('voiceBtn').classList.remove('listening');
-                };
-            }
-
-            // Voice button handler
-            document.getElementById('voiceBtn').onclick = function() {
-                if (!recognition) {
-                    alert('Voice recognition is not supported in your browser.');
-                    return;
-                }
-
-                if (isListening) {
-                    recognition.stop();
-                } else {
-                    try {
-                        recognition.start();
-                    } catch (e) {
-                        showVoiceStatus('Voice recognition failed');
+                        dailyData[dateStr] = 300;  // Days with 300
                     }
                 }
-            };
-            
-            // Save periodically
-            setInterval(function() {
-                if (data.total > 0) {
-                    saveData();
-                }
-            }, 3000);
-        };
-
-        // Save before page unload
-        window.addEventListener('beforeunload', function() {
-            if (data.total > 0) {
-                saveData();
+                
+                // Set start date to 8 days ago
+                var start = new Date();
+                start.setDate(start.getDate() - 8);
+                startDate = start.toDateString();
+                
+                // Save everything
+                localStorage.setItem('total', total);
+                localStorage.setItem('daily', JSON.stringify(dailyData));
+                localStorage.setItem('startDate', startDate);
+                
+                // Today's count remains 0 unless already added today
+                todayCount = dailyData[todayDate] || 0;
+                localStorage.setItem('today', todayCount);
+                
+                updateDisplay();
+                document.getElementById('importBtn').style.display = 'none';
+                
+                alert('Imported successfully!');
             }
-        });
+        }
+
+        // Update the display
+        function updateDisplay() {
+            document.getElementById('total').textContent = total;
+            document.getElementById('today').textContent = todayCount;
+            
+            // Calculate days
+            var days = Object.keys(dailyData).length || 1;
+            document.getElementById('days').textContent = days;
+            
+            // Calculate average
+            var avg = Math.round(total / days) || 0;
+            document.getElementById('average').textContent = avg;
+        }
+
+        // Hide import if already have data
+        if (total >= 2000) {
+            document.getElementById('importBtn').style.display = 'none';
+        }
+
+        // Initial display
+        updateDisplay();
     </script>
 </body>
 </html>
