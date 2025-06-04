@@ -12,43 +12,40 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             max-width: 400px;
             margin: 0 auto;
-            padding: 20px;
-            padding-bottom: 100px; /* Extra padding for home indicator */
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+            background: #f8f9fa;
             min-height: 100vh;
             padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px 30px 20px;
+            text-align: center;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .card {
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .progress-card {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            text-align: center;
+            margin: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
         .big-number {
-            font-size: 56px;
+            font-size: 64px;
             font-weight: bold;
-            text-align: center;
             color: white;
             margin: 10px 0;
         }
         .label {
-            text-align: center;
             color: rgba(255,255,255,0.9);
-            margin-bottom: 10px;
             font-size: 18px;
         }
         .progress-bar {
             background: rgba(255,255,255,0.3);
             height: 8px;
             border-radius: 4px;
-            margin: 20px 0;
+            margin: 20px 0 10px 0;
             overflow: hidden;
         }
         .progress-fill {
@@ -58,49 +55,26 @@
             transition: width 0.5s ease;
         }
         .percentage {
-            text-align: center;
             color: white;
             font-size: 16px;
-            margin-top: 10px;
         }
-        button {
-            width: 22%;
-            padding: 20px;
-            margin: 1%;
-            font-size: 20px;
-            border: none;
-            border-radius: 12px;
-            background: #667eea;
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.1s ease;
-        }
-        button:active {
-            transform: scale(0.95);
-            background: #5a67d8;
-        }
-        .import-btn {
-            width: 96%;
-            background: #48bb78;
-            margin: 2%;
-        }
-        .import-btn:active {
-            background: #38a169;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-            margin-top: 20px;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
         }
         .stat {
-            flex: 1;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
         }
         .stat h3 {
-            margin: 5px;
+            margin: 5px 0;
             color: #667eea;
-            font-size: 28px;
+            font-size: 36px;
+            font-weight: bold;
         }
         .stat small {
             color: #718096;
@@ -108,16 +82,95 @@
         }
         .quote {
             font-style: italic;
-            color: #4a5568;
+            color: #718096;
             text-align: center;
-            margin: 15px 0;
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .time-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .time-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .time-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .type-btn {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .type-btn.active {
+            background: #764ba2;
+            color: white;
+            border-color: #764ba2;
+        }
+        .number-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .number-btn {
+            padding: 25px;
+            font-size: 24px;
+            border: none;
+            border-radius: 15px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.1s ease;
+        }
+        .number-btn:active {
+            transform: scale(0.95);
+            background: #5a67d8;
+        }
+        .import-btn, .report-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
             font-size: 16px;
-            line-height: 1.5;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .import-btn {
+            background: #48bb78;
+        }
+        .report-btn {
+            background: #ed8936;
         }
     </style>
 </head>
 <body>
-    <div class="card progress-card">
+    <div class="header">
         <div class="big-number" id="total">0</div>
         <div class="label">of 10,000 pushups</div>
         
@@ -126,34 +179,52 @@
         </div>
         <div class="percentage" id="percentage">0% complete</div>
         
-        <div class="stats">
-            <div class="stat">
-                <h3 id="today">0</h3>
-                <small>Today</small>
+        <div class="header-stats">
+            <div class="header-stat">
+                <span id="today">0</span> today
             </div>
-            <div class="stat">
-                <h3 id="average">0</h3>
-                <small>Daily Avg</small>
+            <div class="header-stat">
+                <span id="average">0</span> daily avg
             </div>
-            <div class="stat">
-                <h3 id="days">0</h3>
-                <small>Days</small>
+            <div class="header-stat">
+                <span id="streak">0</span> streak 🔥
             </div>
         </div>
     </div>
 
-    <div class="card">
+    <div class="card" style="padding: 12px;">
         <div class="quote" id="quote">Every pushup is a step closer to your strongest self.</div>
     </div>
 
     <div class="card">
-        <button onclick="add(5)">+5</button>
-        <button onclick="add(10)">+10</button>
-        <button onclick="add(15)">+15</button>
-        <button onclick="add(20)">+20</button>
+        <div class="time-selector">
+            <button class="time-btn active" onclick="selectTime('morning')">🌅 Morning</button>
+            <button class="time-btn" onclick="selectTime('afternoon')">☀️ Afternoon</button>
+            <button class="time-btn" onclick="selectTime('evening')">🌙 Evening</button>
+        </div>
         
+        <div class="type-selector">
+            <button class="type-btn active" onclick="selectType('normal')">Normal</button>
+            <button class="type-btn" onclick="selectType('pike')">Pike</button>
+            <button class="type-btn" onclick="selectType('wide')">Wide</button>
+            <button class="type-btn" onclick="selectType('elevated')">Elevated</button>
+        </div>
+        
+        <div class="number-grid">
+            <button class="number-btn" onclick="add(5)">+5</button>
+            <button class="number-btn" onclick="add(10)">+10</button>
+            <button class="number-btn" onclick="add(15)">+15</button>
+            <button class="number-btn" onclick="add(20)">+20</button>
+        </div>
+        
+        <button class="report-btn" onclick="downloadReport()">
+            📊 Download Summary Report
+        </button>
+    </div>
+
+    <div class="card">
         <button class="import-btn" onclick="importData()" id="importBtn">
-            Import Your 8 Days (2,230 pushups)
+            📥 Import Your 8 Days (2,230 pushups)
         </button>
     </div>
 
