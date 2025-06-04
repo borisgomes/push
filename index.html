@@ -664,6 +664,11 @@
                 </svg>
                 Import 8 Days History (2,230 pushups)
             </button>
+            
+            <!-- Debug button -->
+            <button class="download-btn" style="background: #6b7280; margin-top: 10px;" onclick="showDebugInfo()">
+                Show Debug Info
+            </button>
         </div>
     </div>
 
@@ -671,10 +676,10 @@
     <div class="voice-section">
         <div class="voice-container" style="flex-direction: column; gap: 15px;">
             <div class="type-selector">
-                <button class="type-btn active" onclick="selectType('normal')">Normal</button>
-                <button class="type-btn" onclick="selectType('pike')">Pike</button>
-                <button class="type-btn" onclick="selectType('wide')">Wide</button>
-                <button class="type-btn" onclick="selectType('elevated')">Elevated</button>
+                <button class="type-btn active" data-type="normal" onclick="selectType('normal')">Normal</button>
+                <button class="type-btn" data-type="pike" onclick="selectType('pike')">Pike</button>
+                <button class="type-btn" data-type="wide" onclick="selectType('wide')">Wide</button>
+                <button class="type-btn" data-type="elevated" onclick="selectType('elevated')">Elevated</button>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <div class="quick-add-buttons">
@@ -1083,26 +1088,41 @@
             document.querySelectorAll('.type-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            // Find the button that was clicked and make it active
+            document.querySelector(`.type-btn[data-type="${type}"]`).classList.add('active');
         }
 
-        // Add pushups
+        // Add pushups - ensure this works after import
         function addPushups(count) {
+            if (typeof count !== 'number' || count <= 0) {
+                console.error('Invalid count:', count);
+                return;
+            }
+            
             const today = new Date().toDateString();
             
             data.total += count;
             data.todayCount += count;
             
             // Update daily data
+            if (!data.dailyData) {
+                data.dailyData = {};
+            }
             if (!data.dailyData[today]) {
                 data.dailyData[today] = 0;
             }
             data.dailyData[today] += count;
             
             // Update pushup types
+            if (!data.pushupTypes) {
+                data.pushupTypes = { normal: 0, pike: 0, wide: 0, elevated: 0 };
+            }
             data.pushupTypes[selectedType] += count;
             
             // Add to history with type
+            if (!data.todayHistory) {
+                data.todayHistory = [];
+            }
             data.todayHistory.push({
                 count: count,
                 type: selectedType,
@@ -1117,6 +1137,14 @@
                 alert('🎉 Congratulations! You\'ve completed the 10,000 pushup challenge!');
             }
         }
+
+        // Make functions globally accessible
+        window.addPushups = addPushups;
+        window.selectType = selectType;
+        window.importHistoricalData = importHistoricalData;
+        window.showDebugInfo = showDebugInfo;
+        window.generateReport = generateReport;
+        window.handlePhotoUpload = handlePhotoUpload;
 
         // Update UI
         function updateUI() {
@@ -1494,6 +1522,31 @@
         function addHistoricalData() {
             // This function is now optional - data can be imported manually
             return;
+        }
+
+        // Show debug information
+        function showDebugInfo() {
+            const debugInfo = {
+                total: data.total,
+                todayCount: data.todayCount,
+                dailyDataCount: Object.keys(data.dailyData || {}).length,
+                dailyData: data.dailyData,
+                streak: calculateStreak(),
+                daysActive: getDaysActive(),
+                avgPerDay: Math.round(data.total / getDaysActive()),
+                startDate: data.startDate,
+                lastActiveDate: data.lastActiveDate,
+                pushupTypes: data.pushupTypes
+            };
+            
+            console.log('Debug Info:', debugInfo);
+            alert('Debug Info:\n' + 
+                  'Total: ' + debugInfo.total + '\n' +
+                  'Today: ' + debugInfo.todayCount + '\n' +
+                  'Days tracked: ' + debugInfo.dailyDataCount + '\n' +
+                  'Streak: ' + debugInfo.streak + '\n' +
+                  'Avg/Day: ' + debugInfo.avgPerDay + '\n' +
+                  'Check console for full data');
         }
 
         // Initialize
