@@ -2,32 +2,60 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Pushup Tracker</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             max-width: 400px;
             margin: 0 auto;
             padding: 20px;
-            background: #f0f0f0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
         .card {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .progress-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-align: center;
         }
         .big-number {
-            font-size: 48px;
+            font-size: 56px;
             font-weight: bold;
             text-align: center;
-            color: #333;
+            color: white;
+            margin: 10px 0;
         }
         .label {
             text-align: center;
-            color: #666;
-            margin-bottom: 20px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 8px;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .percentage {
+            text-align: center;
+            color: white;
+            font-size: 16px;
+            margin-top: 10px;
         }
         button {
             width: 22%;
@@ -35,34 +63,62 @@
             margin: 1%;
             font-size: 20px;
             border: none;
-            border-radius: 5px;
-            background: #007AFF;
+            border-radius: 12px;
+            background: #667eea;
             color: white;
             cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.1s ease;
         }
         button:active {
-            background: #005ACC;
+            transform: scale(0.95);
+            background: #5a67d8;
         }
         .import-btn {
             width: 96%;
-            background: #34C759;
+            background: #48bb78;
             margin: 2%;
+        }
+        .import-btn:active {
+            background: #38a169;
         }
         .stats {
             display: flex;
             justify-content: space-around;
             text-align: center;
+            margin-top: 20px;
+        }
+        .stat {
+            flex: 1;
         }
         .stat h3 {
             margin: 5px;
-            color: #007AFF;
+            color: #667eea;
+            font-size: 28px;
+        }
+        .stat small {
+            color: #718096;
+            font-size: 14px;
+        }
+        .quote {
+            font-style: italic;
+            color: #4a5568;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 16px;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div class="card">
+    <div class="card progress-card">
         <div class="big-number" id="total">0</div>
         <div class="label">of 10,000 pushups</div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <div class="percentage" id="percentage">0% complete</div>
         
         <div class="stats">
             <div class="stat">
@@ -78,6 +134,10 @@
                 <small>Days</small>
             </div>
         </div>
+    </div>
+
+    <div class="card">
+        <div class="quote" id="quote">Every pushup is a step closer to your strongest self.</div>
     </div>
 
     <div class="card">
@@ -166,6 +226,28 @@
             }
         }
 
+        // Simple quotes array
+        var quotes = [
+            "Every pushup is a step closer to your strongest self.",
+            "Your body can stand almost anything – it's your mind you have to convince.",
+            "The pain you feel today will be the strength you feel tomorrow.",
+            "Success starts with self-discipline.",
+            "The only bad workout is the one that didn't happen.",
+            "Push yourself because no one else is going to do it for you.",
+            "Your limitation is only your imagination.",
+            "Dream it, wish it, do it.",
+            "Don't stop when you're tired, stop when you're done.",
+            "Make yourself proud."
+        ];
+
+        // Get today's quote - FIXED
+        function getTodaysQuote() {
+            var today = new Date();
+            var day = today.getDate();
+            var index = day % quotes.length;
+            return quotes[index];
+        }
+
         // Update the display
         function updateDisplay() {
             document.getElementById('total').textContent = total;
@@ -178,6 +260,19 @@
             // Calculate average
             var avg = Math.round(total / days) || 0;
             document.getElementById('average').textContent = avg;
+            
+            // Calculate and show percentage
+            var percent = Math.min(100, (total / 10000) * 100).toFixed(1);
+            document.getElementById('percentage').textContent = percent + '% complete';
+            document.getElementById('progressBar').style.width = percent + '%';
+            
+            // Update quote safely
+            try {
+                document.getElementById('quote').textContent = getTodaysQuote();
+            } catch (e) {
+                // If quote fails, just use a default
+                document.getElementById('quote').textContent = "Keep pushing forward!";
+            }
         }
 
         // Hide import if already have data
@@ -185,8 +280,10 @@
             document.getElementById('importBtn').style.display = 'none';
         }
 
-        // Initial display
-        updateDisplay();
+        // Initial display - at the very end
+        window.onload = function() {
+            updateDisplay();
+        };
     </script>
 </body>
 </html>
