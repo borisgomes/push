@@ -676,15 +676,15 @@
     <div class="voice-section">
         <div class="voice-container" style="flex-direction: column; gap: 15px;">
             <div class="type-selector">
-                <button class="type-btn active" data-type="normal" onclick="selectType('normal')">Normal</button>
-                <button class="type-btn" data-type="pike" onclick="selectType('pike')">Pike</button>
-                <button class="type-btn" data-type="wide" onclick="selectType('wide')">Wide</button>
-                <button class="type-btn" data-type="elevated" onclick="selectType('elevated')">Elevated</button>
+                <button class="type-btn active" data-type="normal">Normal</button>
+                <button class="type-btn" data-type="pike">Pike</button>
+                <button class="type-btn" data-type="wide">Wide</button>
+                <button class="type-btn" data-type="elevated">Elevated</button>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <div class="quick-add-buttons">
-                    <button class="quick-add-btn" onclick="addPushups(5)">5</button>
-                    <button class="quick-add-btn" onclick="addPushups(10)">10</button>
+                    <button class="quick-add-btn" data-count="5">5</button>
+                    <button class="quick-add-btn" data-count="10">10</button>
                 </div>
                 <div style="position: relative;">
                     <div class="voice-status" id="voiceStatus"></div>
@@ -697,8 +697,8 @@
                     </button>
                 </div>
                 <div class="quick-add-buttons">
-                    <button class="quick-add-btn" onclick="addPushups(15)">15</button>
-                    <button class="quick-add-btn" onclick="addPushups(20)">20</button>
+                    <button class="quick-add-btn" data-count="15">15</button>
+                    <button class="quick-add-btn" data-count="20">20</button>
                 </div>
             </div>
         </div>
@@ -1549,11 +1549,30 @@
                   'Check console for full data');
         }
 
-        // Initialize
+        // Initialize with event listeners
         window.addEventListener('load', async function() {
             loadData();
             updateUI();
             addExportButton();
+            
+            // Add click listeners to quick add buttons
+            document.querySelectorAll('.quick-add-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const count = parseInt(this.getAttribute('data-count'));
+                    console.log('Button clicked, adding:', count);
+                    addPushups(count);
+                });
+            });
+            
+            // Add click listeners to type buttons
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    selectedType = this.getAttribute('data-type');
+                    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    console.log('Type selected:', selectedType);
+                });
+            });
             
             // Show bookmark reminder
             const urlParams = new URLSearchParams(window.location.search);
