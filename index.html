@@ -253,12 +253,13 @@
             updateDisplay();
         }
 
-        // Import your historical data
+        // Import your historical data - FIXED
         function importData() {
             if (confirm('Import 8 days of data (2,230 pushups)?')) {
                 // Reset and add historical data
                 total = 2230;
                 dailyData = {};
+                detailedData = [];
                 
                 // Add 8 days of history
                 var d = new Date();
@@ -272,6 +273,15 @@
                     } else {
                         dailyData[dateStr] = 300;  // Days with 300
                     }
+                    
+                    // Add to detailed data
+                    detailedData.push({
+                        date: dateStr,
+                        time: 'morning',
+                        type: 'normal',
+                        count: dailyData[dateStr],
+                        timestamp: new Date().toISOString()
+                    });
                 }
                 
                 // Set start date to 8 days ago
@@ -282,6 +292,7 @@
                 // Save everything
                 localStorage.setItem('total', total);
                 localStorage.setItem('daily', JSON.stringify(dailyData));
+                localStorage.setItem('detailed', JSON.stringify(detailedData));
                 localStorage.setItem('startDate', startDate);
                 
                 // Today's count remains 0 unless already added today
