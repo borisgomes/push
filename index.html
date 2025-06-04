@@ -676,15 +676,15 @@
     <div class="voice-section">
         <div class="voice-container" style="flex-direction: column; gap: 15px;">
             <div class="type-selector">
-                <button class="type-btn active" data-type="normal">Normal</button>
-                <button class="type-btn" data-type="pike">Pike</button>
-                <button class="type-btn" data-type="wide">Wide</button>
-                <button class="type-btn" data-type="elevated">Elevated</button>
+                <button class="type-btn active" data-type="normal" onclick="selectType('normal')">Normal</button>
+                <button class="type-btn" data-type="pike" onclick="selectType('pike')">Pike</button>
+                <button class="type-btn" data-type="wide" onclick="selectType('wide')">Wide</button>
+                <button class="type-btn" data-type="elevated" onclick="selectType('elevated')">Elevated</button>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <div class="quick-add-buttons">
-                    <button class="quick-add-btn" data-count="5">5</button>
-                    <button class="quick-add-btn" data-count="10">10</button>
+                    <button class="quick-add-btn" onclick="addPushups(5)">5</button>
+                    <button class="quick-add-btn" onclick="addPushups(10)">10</button>
                 </div>
                 <div style="position: relative;">
                     <div class="voice-status" id="voiceStatus"></div>
@@ -697,8 +697,8 @@
                     </button>
                 </div>
                 <div class="quick-add-buttons">
-                    <button class="quick-add-btn" data-count="15">15</button>
-                    <button class="quick-add-btn" data-count="20">20</button>
+                    <button class="quick-add-btn" onclick="addPushups(15)">15</button>
+                    <button class="quick-add-btn" onclick="addPushups(20)">20</button>
                 </div>
             </div>
         </div>
@@ -1549,44 +1549,75 @@
                   'Check console for full data');
         }
 
-        // Initialize with event listeners
-        window.addEventListener('load', async function() {
+        // Initialize - Simple version
+        window.onload = function() {
+            console.log('App loading...');
             loadData();
             updateUI();
-            addExportButton();
             
-            // Add click listeners to quick add buttons
-            document.querySelectorAll('.quick-add-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const count = parseInt(this.getAttribute('data-count'));
-                    console.log('Button clicked, adding:', count);
-                    addPushups(count);
-                });
-            });
-            
-            // Add click listeners to type buttons
-            document.querySelectorAll('.type-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    selectedType = this.getAttribute('data-type');
-                    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    console.log('Type selected:', selectedType);
-                });
-            });
-            
-            // Show bookmark reminder
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('id')) {
-                showDebugMessage('Bookmark this page to keep your data!');
+            // Set up voice recognition
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = function() {
+                    isListening = true;
+                    document.getElementById('voiceBtn').classList.add('listening');
+                    showVoiceStatus('Listening...');
+                };
+
+                recognition.onresult = function(event) {
+                    var transcript = event.results[0][0].transcript;
+                    var number = parseInt(transcript);
+                    
+                    if (!isNaN(number) && number > 0 && number < 1000) {
+                        addPushups(number);
+                        showVoiceStatus('Added ' + number + ' pushups!');
+                    } else {
+                        showVoiceStatus('Please say a number');
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    showVoiceStatus('Error: ' + event.error);
+                    isListening = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                };
+
+                recognition.onend = function() {
+                    isListening = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                };
             }
+
+            // Voice button handler
+            document.getElementById('voiceBtn').onclick = function() {
+                if (!recognition) {
+                    alert('Voice recognition is not supported in your browser.');
+                    return;
+                }
+
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        showVoiceStatus('Voice recognition failed');
+                    }
+                }
+            };
             
-            // Save data periodically
+            // Save periodically
             setInterval(function() {
                 if (data.total > 0) {
                     saveData();
                 }
             }, 3000);
-        });
+        };
 
         // Save before page unload
         window.addEventListener('beforeunload', function() {
