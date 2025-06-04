@@ -1,369 +1,312 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Pushups">
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
     <title>Pushup Tracker</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
             max-width: 400px;
             margin: 0 auto;
             padding: 0;
-            background: #f8f9fa;
-            min-height: 100vh;
-            padding-top: env(safe-area-inset-top);
+            background: #f0f0f0;
         }
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 40px 20px 30px 20px;
-            text-align: center;
-            border-radius: 0 0 30px 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            margin: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-        .big-number {
-            font-size: 64px;
-            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 25px 20px;
             color: white;
-            margin: 10px 0;
+            text-align: center;
         }
-        .label {
-            color: rgba(255,255,255,0.9);
+        .total {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        .stats {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .stats b {
             font-size: 18px;
         }
         .progress-bar {
             background: rgba(255,255,255,0.3);
-            height: 8px;
-            border-radius: 4px;
-            margin: 20px 0 10px 0;
-            overflow: hidden;
+            height: 6px;
+            border-radius: 3px;
+            margin: 10px 0;
         }
         .progress-fill {
             background: white;
             height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.5s;
         }
-        .percentage {
-            color: white;
-            font-size: 16px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-        .stat h3 {
-            margin: 5px 0;
-            color: #667eea;
-            font-size: 36px;
-            font-weight: bold;
-        }
-        .stat small {
-            color: #718096;
-            font-size: 14px;
-        }
-        .quote {
-            font-style: italic;
-            color: #718096;
-            text-align: center;
-            margin: 10px 0;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        .time-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .time-btn {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e2e8f0;
+        .card {
             background: white;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #4a5568;
-            cursor: pointer;
-            transition: all 0.2s;
+            margin: 10px;
+            padding: 12px;
+            border-radius: 12px;
         }
-        .time-btn.active {
+        .row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .btn.active {
             background: #667eea;
             color: white;
             border-color: #667eea;
         }
-        .type-selector {
+        .numbers {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
         }
-        .type-btn {
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            background: white;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #4a5568;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .type-btn.active {
-            background: #764ba2;
-            color: white;
-            border-color: #764ba2;
-        }
-        .number-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .number-btn {
-            padding: 25px;
-            font-size: 24px;
-            border: none;
-            border-radius: 15px;
+        .num-btn {
+            padding: 20px;
+            font-size: 22px;
             background: #667eea;
             color: white;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.1s ease;
-        }
-        .number-btn:active {
-            transform: scale(0.95);
-            background: #5a67d8;
-        }
-        .import-btn, .report-btn {
-            width: 100%;
-            padding: 15px;
-            margin-top: 10px;
-            font-size: 16px;
             border: none;
             border-radius: 12px;
-            color: white;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 600;
         }
         .import-btn {
+            width: 100%;
+            padding: 12px;
             background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
         }
         .report-btn {
+            width: 100%;
+            padding: 12px;
             background: #ed8936;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .quote {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            font-size: 13px;
+            padding: 8px;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="big-number" id="total">0</div>
-        <div class="label">of 10,000 pushups</div>
-        
-        <div class="header-stats">
-            <span id="today">0</span> today • <span id="average">0</span> avg • <span id="streak">0</span> streak 🔥
+        <div class="total" id="total">0</div>
+        <div>of 10,000 pushups</div>
+        <div class="stats">
+            <b id="today">0</b> today • 
+            <b id="avg">0</b> avg • 
+            <b id="streak">0</b> streak 🔥
         </div>
-        
         <div class="progress-bar">
-            <div class="progress-fill" id="progressBar"></div>
+            <div class="progress-fill" id="progress"></div>
         </div>
-        <div class="percentage" id="percentage">0% complete</div>
+        <div id="percent">0% complete</div>
     </div>
 
-    <div class="card" style="padding: 12px;">
-        <div class="quote" id="quote">Every pushup is a step closer to your strongest self.</div>
+    <div class="card quote" id="quote">Keep pushing forward!</div>
+
+    <div class="card">
+        <div class="row" id="times">
+            <button class="btn active" data-value="morning">🌅 Morning</button>
+            <button class="btn" data-value="afternoon">☀️ Afternoon</button>
+            <button class="btn" data-value="evening">🌙 Evening</button>
+        </div>
+        
+        <div class="row" id="types">
+            <button class="btn active" data-value="normal">Normal</button>
+            <button class="btn" data-value="pike">Pike</button>
+            <button class="btn" data-value="wide">Wide</button>
+            <button class="btn" data-value="elevated">Elevated</button>
+        </div>
+        
+        <div class="numbers">
+            <button class="num-btn" onclick="addPushups(5)">+5</button>
+            <button class="num-btn" onclick="addPushups(10)">+10</button>
+            <button class="num-btn" onclick="addPushups(15)">+15</button>
+            <button class="num-btn" onclick="addPushups(20)">+20</button>
+        </div>
+        
+        <button class="report-btn" onclick="getReport()">📊 Download Report</button>
     </div>
 
     <div class="card">
-        <div class="time-selector">
-            <button class="time-btn active" onclick="selectTime('morning')">🌅 Morning</button>
-            <button class="time-btn" onclick="selectTime('afternoon')">☀️ Afternoon</button>
-            <button class="time-btn" onclick="selectTime('evening')">🌙 Evening</button>
-        </div>
-        
-        <div class="type-selector">
-            <button class="type-btn active" onclick="selectType('normal')">Normal</button>
-            <button class="type-btn" onclick="selectType('pike')">Pike</button>
-            <button class="type-btn" onclick="selectType('wide')">Wide</button>
-            <button class="type-btn" onclick="selectType('elevated')">Elevated</button>
-        </div>
-        
-        <div class="number-grid">
-            <button class="number-btn" onclick="add(5)">+5</button>
-            <button class="number-btn" onclick="add(10)">+10</button>
-            <button class="number-btn" onclick="add(15)">+15</button>
-            <button class="number-btn" onclick="add(20)">+20</button>
-        </div>
-        
-        <button class="report-btn" onclick="downloadReport()">
-            📊 Download Summary Report
-        </button>
-    </div>
-
-    <div class="card">
-        <button class="import-btn" onclick="importData()" id="importBtn">
-            📥 Import Your 8 Days (2,230 pushups)
+        <button class="import-btn" onclick="doImport()" id="importBtn">
+            📥 Import 8 Days (2,230 pushups)
         </button>
     </div>
 
     <script>
-        // Super simple data storage
-        var total = parseInt(localStorage.getItem('total') || '0');
-        var todayCount = parseInt(localStorage.getItem('today') || '0');
-        var lastDate = localStorage.getItem('lastDate') || '';
-        var startDate = localStorage.getItem('startDate') || new Date().toDateString();
-        var dailyData = JSON.parse(localStorage.getItem('daily') || '{}');
-
-        // Check if new day
-        var todayDate = new Date().toDateString();
-        if (lastDate !== todayDate) {
-            todayCount = 0;
-            lastDate = todayDate;
-            localStorage.setItem('lastDate', lastDate);
-            localStorage.setItem('today', '0');
+        // Data
+        var data = {
+            total: parseInt(localStorage.getItem('p_total') || 0),
+            today: parseInt(localStorage.getItem('p_today') || 0),
+            daily: JSON.parse(localStorage.getItem('p_daily') || '{}'),
+            details: JSON.parse(localStorage.getItem('p_details') || '[]')
+        };
+        
+        var selectedTime = 'morning';
+        var selectedType = 'normal';
+        
+        // Check new day
+        var today = new Date().toDateString();
+        if (localStorage.getItem('p_date') !== today) {
+            data.today = 0;
+            localStorage.setItem('p_date', today);
+            localStorage.setItem('p_today', 0);
         }
-
+        
+        // Button handlers
+        document.getElementById('times').onclick = function(e) {
+            if (e.target.classList.contains('btn')) {
+                document.querySelectorAll('#times .btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                selectedTime = e.target.dataset.value;
+            }
+        };
+        
+        document.getElementById('types').onclick = function(e) {
+            if (e.target.classList.contains('btn')) {
+                document.querySelectorAll('#types .btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                selectedType = e.target.dataset.value;
+            }
+        };
+        
         // Add pushups
-        function add(num) {
-            total += num;
-            todayCount += num;
+        function addPushups(num) {
+            data.total += num;
+            data.today += num;
+            data.daily[today] = (data.daily[today] || 0) + num;
+            data.details.push({
+                date: today,
+                time: selectedTime,
+                type: selectedType,
+                count: num
+            });
             
-            // Save to daily data
-            dailyData[todayDate] = (dailyData[todayDate] || 0) + num;
+            localStorage.setItem('p_total', data.total);
+            localStorage.setItem('p_today', data.today);
+            localStorage.setItem('p_daily', JSON.stringify(data.daily));
+            localStorage.setItem('p_details', JSON.stringify(data.details));
             
-            // Save everything
-            localStorage.setItem('total', total);
-            localStorage.setItem('today', todayCount);
-            localStorage.setItem('daily', JSON.stringify(dailyData));
-            
-            updateDisplay();
+            update();
         }
-
-        // Import your historical data - FIXED
-        function importData() {
-            if (confirm('Import 8 days of data (2,230 pushups)?')) {
-                // Reset and add historical data
-                total = 2230;
-                dailyData = {};
-                detailedData = [];
+        
+        // Import
+        function doImport() {
+            if (confirm('Import 8 days (2,230 pushups)?')) {
+                data.total = 2230;
+                data.daily = {};
+                data.details = [];
                 
-                // Add 8 days of history
                 var d = new Date();
                 for (var i = 8; i >= 1; i--) {
                     var date = new Date(d);
                     date.setDate(date.getDate() - i);
                     var dateStr = date.toDateString();
+                    var count = i === 5 ? 230 : 300;
                     
-                    if (i === 5) {
-                        dailyData[dateStr] = 230;  // Day with 230
-                    } else {
-                        dailyData[dateStr] = 300;  // Days with 300
-                    }
-                    
-                    // Add to detailed data
-                    detailedData.push({
+                    data.daily[dateStr] = count;
+                    data.details.push({
                         date: dateStr,
                         time: 'morning',
                         type: 'normal',
-                        count: dailyData[dateStr],
-                        timestamp: new Date().toISOString()
+                        count: count
                     });
                 }
                 
-                // Set start date to 8 days ago
-                var start = new Date();
-                start.setDate(start.getDate() - 8);
-                startDate = start.toDateString();
+                localStorage.setItem('p_total', data.total);
+                localStorage.setItem('p_daily', JSON.stringify(data.daily));
+                localStorage.setItem('p_details', JSON.stringify(data.details));
                 
-                // Save everything
-                localStorage.setItem('total', total);
-                localStorage.setItem('daily', JSON.stringify(dailyData));
-                localStorage.setItem('detailed', JSON.stringify(detailedData));
-                localStorage.setItem('startDate', startDate);
+                data.today = data.daily[today] || 0;
+                localStorage.setItem('p_today', data.today);
                 
-                // Today's count remains 0 unless already added today
-                todayCount = dailyData[todayDate] || 0;
-                localStorage.setItem('today', todayCount);
-                
-                updateDisplay();
                 document.getElementById('importBtn').style.display = 'none';
-                
-                alert('Imported successfully!');
+                update();
             }
         }
-
-        // Simple quotes array
-        var quotes = [
-            "Every pushup is a step closer to your strongest self.",
-            "Your body can stand almost anything – it's your mind you have to convince.",
-            "The pain you feel today will be the strength you feel tomorrow.",
-            "Success starts with self-discipline.",
-            "The only bad workout is the one that didn't happen.",
-            "Push yourself because no one else is going to do it for you.",
-            "Your limitation is only your imagination.",
-            "Dream it, wish it, do it.",
-            "Don't stop when you're tired, stop when you're done.",
-            "Make yourself proud."
-        ];
-
-        // Get today's quote - FIXED
-        function getTodaysQuote() {
-            var today = new Date();
-            var day = today.getDate();
-            var index = day % quotes.length;
-            return quotes[index];
+        
+        // Download report
+        function getReport() {
+            var text = '10,000 PUSHUP REPORT\n\n';
+            text += 'Total: ' + data.total + ' / 10,000 (' + (data.total/100).toFixed(1) + '%)\n';
+            text += 'Days: ' + Object.keys(data.daily).length + '\n';
+            text += 'Streak: ' + getStreak() + '\n\n';
+            
+            text += 'DAILY LOG:\n';
+            Object.keys(data.daily).sort().reverse().forEach(function(d) {
+                text += d + ': ' + data.daily[d] + '\n';
+            });
+            
+            var blob = new Blob([text], {type: 'text/plain'});
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'pushup-report.txt';
+            a.click();
         }
-
-        // Update the display
-        function updateDisplay() {
-            document.getElementById('total').textContent = total;
-            document.getElementById('today').textContent = todayCount;
+        
+        // Get streak
+        function getStreak() {
+            var streak = 0;
+            var check = new Date();
             
-            // Calculate days
-            var days = Object.keys(dailyData).length || 1;
-            document.getElementById('days').textContent = days;
+            for (var i = 0; i < 365; i++) {
+                if (data.daily[check.toDateString()]) {
+                    streak++;
+                } else if (i > 0) {
+                    break;
+                }
+                check.setDate(check.getDate() - 1);
+            }
+            return streak;
+        }
+        
+        // Update display
+        function update() {
+            document.getElementById('total').textContent = data.total;
+            document.getElementById('today').textContent = data.today;
+            document.getElementById('streak').textContent = getStreak();
             
-            // Calculate average
-            var avg = Math.round(total / days) || 0;
-            document.getElementById('average').textContent = avg;
+            var days = Object.keys(data.daily).length || 1;
+            document.getElementById('avg').textContent = Math.round(data.total / days);
             
-            // Calculate and show percentage
-            var percent = Math.min(100, (total / 10000) * 100).toFixed(1);
-            document.getElementById('percentage').textContent = percent + '% complete';
-            document.getElementById('progressBar').style.width = percent + '%';
+            var pct = (data.total / 10000 * 100).toFixed(1);
+            document.getElementById('percent').textContent = pct + '% complete';
+            document.getElementById('progress').style.width = Math.min(100, pct) + '%';
             
-            // Update quote safely
-            try {
-                document.getElementById('quote').textContent = getTodaysQuote();
-            } catch (e) {
-                // If quote fails, just use a default
-                document.getElementById('quote').textContent = "Keep pushing forward!";
+            if (data.total >= 2000) {
+                document.getElementById('importBtn').style.display = 'none';
             }
         }
-
-        // Hide import if already have data
-        if (total >= 2000) {
-            document.getElementById('importBtn').style.display = 'none';
-        }
-
-        // Initial display - at the very end
-        window.onload = function() {
-            updateDisplay();
-        };
+        
+        // Start
+        update();
     </script>
 </body>
 </html>
