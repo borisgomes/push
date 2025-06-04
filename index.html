@@ -6,11 +6,33 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Pushups">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHBhdGggZD0iTTYwIDExMEw2MCA3MEg4MEM4OCA3MCA5NSA3NyA5NSA4NVY5NUM5NSAxMDMgOTUgMTAzIDk1IDk1VjEwNUM5NSAxMTMgODggMTIwIDgwIDEyMEg2MFYxMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIwIDcwSDEwMFYxMTBIMTAwVjEyMEgxMjBDMTI4IDEyMCAxMzUgMTEzIDEzNSAxMDVWODVDMTM1IDc3IDEyOCA3MCAxMjAgNzBaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyIiB4MT0iMCIgeTE9IjAiIHgyPSIxODAiIHkyPSIxODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzY2N2VlYSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3NjRiYTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4=">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <title>Pushup Tracker</title>
     <style>
         * {
@@ -681,6 +703,34 @@
     <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload(event)">
 
     <script>
+        // Initialize Firebase (replace with your config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Generate or get unique user ID
+        function getUserId() {
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('userId', userId);
+            }
+            return userId;
+        }
+        
+        const userId = getUserId();
+        const userRef = database.ref('users/' + userId);
+
         // Motivational quotes
         const quotes = [
             "Every pushup is a step closer to your strongest self.",
@@ -852,31 +902,73 @@
             saveData();     // Backup
         }
 
-        // Load data from localStorage
-        function loadData() {
-            if (!isLocalStorageAvailable()) {
-                console.log('localStorage not available');
-                showDebugMessage('Storage not available - data won\'t persist');
-                return;
+        // Super simple solution: Save data in URL
+        function generateUserId() {
+            // Check if user already has an ID in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            let userId = urlParams.get('id');
+            
+            if (!userId) {
+                // Generate new ID
+                userId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+                // Redirect to URL with ID
+                window.location.href = window.location.pathname + '?id=' + userId;
             }
+            
+            return userId;
+        }
 
+        // Save data using the user ID
+        function saveData() {
+            const userId = generateUserId();
+            const key = 'pushup_' + userId;
+            
             try {
-                const saved = localStorage.getItem('pushupData_v3');
+                // Try multiple storage methods
+                localStorage.setItem(key, JSON.stringify(data));
+                sessionStorage.setItem(key, JSON.stringify(data));
+                
+                // Also save a backup with just the ID
+                localStorage.setItem('lastUserId', userId);
+                
+                showDebugMessage('Data saved');
+            } catch (e) {
+                console.error('Save failed:', e);
+                showDebugMessage('Save failed - bookmark this page!');
+            }
+        }
+
+        // Load data using the user ID
+        function loadData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('id');
+            
+            if (!userId) {
+                // Check if we have a last used ID
+                const lastId = localStorage.getItem('lastUserId');
+                if (lastId) {
+                    window.location.href = window.location.pathname + '?id=' + lastId;
+                    return;
+                }
+            }
+            
+            const key = 'pushup_' + userId;
+            
+            try {
+                // Try to load from storage
+                let saved = localStorage.getItem(key) || sessionStorage.getItem(key);
+                
                 if (saved) {
                     const savedData = JSON.parse(saved);
-                    // Merge saved data with default structure
                     data = {
                         ...data,
                         ...savedData,
                         pushupTypes: savedData.pushupTypes || { normal: 0, pike: 0, wide: 0, elevated: 0 }
                     };
                     
-                    debugInfo.dataLoaded = true;
-                    
-                    // Check if it's a new day
+                    // Check if new day
                     const today = new Date().toDateString();
                     if (data.lastActiveDate !== today) {
-                        // Only reset daily-specific data
                         data.todayCount = 0;
                         data.todayHistory = [];
                         data.photos = [];
@@ -884,48 +976,10 @@
                         saveData();
                     }
                     
-                    showDebugMessage(`Data loaded: ${data.total} total pushups`);
-                } else {
-                    showDebugMessage('No saved data found');
+                    showDebugMessage(`Loaded: ${data.total} pushups`);
                 }
             } catch (e) {
-                console.error('Error loading data:', e);
-                showDebugMessage('Error loading data: ' + e.message);
-            }
-        }
-
-        // Save data
-        function saveData() {
-            if (!isLocalStorageAvailable()) {
-                showDebugMessage('Cannot save - storage not available');
-                return;
-            }
-
-            try {
-                const dataToSave = JSON.stringify(data);
-                localStorage.setItem('pushupData_v3', dataToSave);
-                
-                // Verify save
-                const verified = localStorage.getItem('pushupData_v3');
-                if (verified === dataToSave) {
-                    debugInfo.dataSaved = true;
-                    showDebugMessage('Data saved successfully');
-                } else {
-                    showDebugMessage('Save verification failed');
-                }
-            } catch (e) {
-                console.error('Error saving data:', e);
-                showDebugMessage('Error saving: ' + e.message);
-                
-                // Try to clear some space and retry
-                try {
-                    localStorage.removeItem('pushupData');
-                    localStorage.removeItem('pushupData_v2');
-                    localStorage.setItem('pushupData_v3', JSON.stringify(data));
-                    showDebugMessage('Saved after clearing old data');
-                } catch (retryError) {
-                    showDebugMessage('Save failed even after cleanup');
-                }
+                console.error('Load failed:', e);
             }
         }
 
@@ -942,28 +996,37 @@
             }
         }
 
-        // Calculate streak
+        // Calculate streak - Fixed version
         function calculateStreak() {
             const today = new Date();
-            const sortedDates = Object.keys(data.dailyData).sort((a, b) => new Date(b) - new Date(a));
+            today.setHours(0, 0, 0, 0);
+            const sortedDates = Object.keys(data.dailyData || {})
+                .map(dateStr => new Date(dateStr))
+                .sort((a, b) => b - a);
             
             if (sortedDates.length === 0) return 0;
             
             let streak = 0;
             let checkDate = new Date(today);
+            let foundTodayData = false;
             
-            for (let i = 0; i < sortedDates.length; i++) {
+            // Check if we have data for today
+            const todayStr = today.toDateString();
+            if (data.dailyData[todayStr] && data.dailyData[todayStr] > 0) {
+                foundTodayData = true;
+            }
+            
+            // If no data for today, start checking from yesterday
+            if (!foundTodayData && sortedDates[0] < today) {
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            
+            // Count consecutive days
+            while (true) {
                 const dateStr = checkDate.toDateString();
                 if (data.dailyData[dateStr] && data.dailyData[dateStr] > 0) {
                     streak++;
                     checkDate.setDate(checkDate.getDate() - 1);
-                } else if (i === 0 && today.toDateString() !== sortedDates[0]) {
-                    // If today has no pushups yet, check from yesterday
-                    checkDate = new Date(sortedDates[0]);
-                    if (data.dailyData[checkDate.toDateString()] > 0) {
-                        streak++;
-                        checkDate.setDate(checkDate.getDate() - 1);
-                    }
                 } else {
                     break;
                 }
@@ -1381,31 +1444,49 @@
                     { daysAgo: 1, count: 300 }
                 ];
                 
+                // Clear existing data for fresh import
+                data.total = 0;
+                data.dailyData = {};
+                data.pushupTypes = { normal: 0, pike: 0, wide: 0, elevated: 0 };
+                
+                // Add each historical day
                 historicalDays.forEach(day => {
                     const date = new Date(today);
                     date.setDate(date.getDate() - day.daysAgo);
                     const dateStr = date.toDateString();
                     
                     // Add to daily data
-                    if (!data.dailyData[dateStr]) {
-                        data.dailyData[dateStr] = 0;
-                    }
-                    data.dailyData[dateStr] += day.count;
+                    data.dailyData[dateStr] = day.count;
                     
                     // Add to total
                     data.total += day.count;
                     
-                    // Add to pushup types
+                    // Add to pushup types (assuming all normal)
                     data.pushupTypes.normal += day.count;
                 });
+                
+                // Set the start date to 8 days ago
+                const startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - 8);
+                data.startDate = startDate.toDateString();
+                
+                // Update last active date to yesterday (since today might not have data yet)
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                data.lastActiveDate = yesterday.toDateString();
+                
+                // Calculate today's count if any
+                const todayStr = today.toDateString();
+                data.todayCount = data.dailyData[todayStr] || 0;
                 
                 // Hide the import button after importing
                 document.getElementById('importSection').style.display = 'none';
                 
+                // Save and update everything
                 saveData();
                 updateUI();
                 
-                alert('Historical data imported successfully! Total: ' + data.total + ' pushups');
+                alert('Historical data imported successfully!\nTotal: ' + data.total + ' pushups\nStreak: ' + calculateStreak() + ' days');
             }
         }
 
@@ -1417,28 +1498,28 @@
 
         // Initialize
         window.addEventListener('load', async function() {
-            try {
-                await initDB();
-                await loadDataFromDB();
-            } catch (e) {
-                console.log('IndexedDB not available, using localStorage');
-                loadData();
-            }
+            loadData();
             updateUI();
             addExportButton();
+            
+            // Show bookmark reminder
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('id')) {
+                showDebugMessage('Bookmark this page to keep your data!');
+            }
             
             // Save data periodically
             setInterval(function() {
                 if (data.total > 0) {
-                    saveAllData();
+                    saveData();
                 }
-            }, 5000);
+            }, 3000);
         });
 
         // Save before page unload
         window.addEventListener('beforeunload', function() {
             if (data.total > 0) {
-                saveAllData();
+                saveData();
             }
         });
     </script>
